@@ -10,9 +10,15 @@ variable "ec2_instances_id" {
 }
 
 variable "rds_instance_id" {
+  description = "RDS instance id"
+  type = string
+}
+
+variable "rds_instance_identifier" {
   description = "RDS instance identifier"
   type = string
 }
+
 
 variable "s3_bucket_name" {
   description = "S3 bucket name"
@@ -22,5 +28,10 @@ variable "s3_bucket_name" {
 variable "dashboard_name" {
   description = "Name of central dashboard"
   type = string
-  default = "MyCentralResourceDashboard"
+  default = "Central-Resource-Monitoring-Dashboard"
+}
+
+variable "sns_topic_arn" {
+  description = "arn of sns topic"
+  type = string
 }

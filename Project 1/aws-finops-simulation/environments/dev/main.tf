@@ -26,8 +26,14 @@ module "my_rds" {
 }
 
 module "my_cloudwatch" {
-  source           = "../../modules/cloudwatch"
-  ec2_instances_id = module.ec2_instances.ec2_outputs.web_server_id
-  rds_instance_id  = module.my_rds.rds_outputs.db_instance_id
-  s3_bucket_name   = module.my_s3_bucket.s3_outputs.bucket_name
+  source                  = "../../modules/cloudwatch"
+  ec2_instances_id        = module.ec2_instances.ec2_outputs.web_server_id
+  rds_instance_id         = module.my_rds.rds_outputs.db_instance_id
+  rds_instance_identifier = module.my_rds.rds_outputs.db_instance_identifier
+  s3_bucket_name          = module.my_s3_bucket.s3_outputs.bucket_name
+  sns_topic_arn           = module.my_sns.sns_topic_arn
+}
+
+module "my_sns" {
+  source = "../../modules/sns"
 }
