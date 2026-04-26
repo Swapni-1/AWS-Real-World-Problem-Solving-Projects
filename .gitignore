@@ -1,0 +1,23 @@
+# 1. Sabse pehle typo theek karein (environments vs environment)
+# Aur specific paths ki jagah 'Wildcards' use karein taaki ye hamesha kaam kare
+
+# Sabhi folders mein .terraform ko ignore karein
+**/.terraform/
+
+# Sabhi .tfstate aur backup files ko ignore karein
+**/*.tfstate
+**/*.tfstate.*
+
+# Terraform lock files aur temporary hcl files
+**/.terraform.lock.hcl
+**/*.hcl
+
+# Variable files (Sensitive data)
+**/*.tfvars
+**/*.tfvars.json
+
+# Local environment files
+.env
+
+# MacOS specific files
+.DS_Store

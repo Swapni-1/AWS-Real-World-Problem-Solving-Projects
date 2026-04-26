@@ -1,0 +1,26 @@
+variable "aws_region" {
+  description = "Value of current aws region"
+  type = string
+  default = "ap-south-2"
+}
+
+variable "ec2_instances_id" {
+  description = "EC2 instance ID to monitor"
+  type = string
+}
+
+variable "rds_instance_id" {
+  description = "RDS instance identifier"
+  type = string
+}
+
+variable "s3_bucket_name" {
+  description = "S3 bucket name"
+  type = string
+}
+
+variable "dashboard_name" {
+  description = "Name of central dashboard"
+  type = string
+  default = "MyCentralResourceDashboard"
+}
