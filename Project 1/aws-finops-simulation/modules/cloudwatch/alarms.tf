@@ -5,7 +5,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_idle" {
   evaluation_periods = 1
   metric_name = "CPUUtilization"
   namespace = "AWS/EC2"
-  period = 3600 # 1 hour
+  period = 900 # 15 mins
   statistic = "Average"
   threshold = 5
   alarm_description = "Alarm if EC2 instance average CPU < 5% for 1 hour (idle)"
@@ -23,7 +23,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_idle" {
 # 2. EC2 - CPU Overloading Alarm (CPU > 75% for 10 minutes)
 resource "aws_cloudwatch_metric_alarm" "ec2_overload" {
   alarm_name = "ec2-cpu-overload-above-75-percent"
-  comparison_operator = "GreaterThanThreshold"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods = 2 # 2 periods - 10 mins if period 300
   metric_name = "CPUUtilization"
   namespace = "AWS/EC2"
@@ -66,10 +66,10 @@ resource "aws_cloudwatch_metric_alarm" "rds_idle" {
 resource "aws_cloudwatch_metric_alarm" "rds_zero_connections" {
   alarm_name = "rds-zero-database-connections"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods = 1
+  evaluation_periods = 1 # 1 hours
   metric_name = "DatabaseConnections"
   namespace = "AWS/RDS"
-  period = 300
+  period = 3600 
   statistic = "Average"
   threshold = 1
   alarm_description = "RDS has zero active connections (unused)."
@@ -97,8 +97,8 @@ resource "aws_cloudwatch_metric_alarm" "s3_unused" {
   alarm_name = "s3-bucket-no-requests-24-hours"
   comparison_operator = "LessThanOrEqualToThreshold"
   threshold = 0
-  evaluation_periods = 288 # 1 days
-  period = 300 # 5 mins
+  evaluation_periods = 1 # 1 days
+  period = 3600 # 5 mins
   metric_name = "AllRequests"
   namespace = "AWS/S3"
   statistic = "Sum"
