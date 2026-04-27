@@ -32,17 +32,22 @@ resource "aws_iam_role_policy" "alarm_lambda_role" {
         {
             Effect = "Allow"
             Action = [
-                "ec2:StopInstances",
-                "ec2:DescribeInstances"
+                "ec2:StopInstances"
             ]
             Resource = "*"
+            Condition = {
+                StringEquals = {
+                    "ec2:InstanceId" = var.ec2_instances_id
+                }
+            }
         },
         {
             Effect = "Allow"
             Action = [
-               "rds:StopDBInstance",
                "rds:ModifyDBInstance",
-               "rds:DescribeDBInstance"
+               "rds:DescribeDBInstance",
+               "rds:DeleteDBInstance",
+               "rds:CreateDBSnapshot"
             ]
             Resource = "*"
         },
@@ -51,16 +56,19 @@ resource "aws_iam_role_policy" "alarm_lambda_role" {
             Action = [
                "s3:PutBucketLifecycleConfiguration",
                "s3:GetBucketLifecycleConfiguration",
-               "s3:ListBucket"
+               "s3:ListBucket",
+               "s3:GetBucketLocation",
+               "s3:DeleteBucket"
             ]
             Resource = "arn:aws:s3:::${var.s3_bucket_name}"
         },
         {
             Effect = "Allow"
             Action = [
-                "s3:GetBucketLocation"
+                "s3:DeleteObject",
+                "s3:GetObject"
             ]
-            Resource = "arn:aws:s3:::${var.s3_bucket_name}"
+            Resource = "arn:aws:s3:::${var.s3_bucket_name}/*"
         }
     ]
   })

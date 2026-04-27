@@ -47,10 +47,10 @@ resource "aws_cloudwatch_metric_alarm" "rds_idle" {
   evaluation_periods = 1
   metric_name = "CPUUtilization"
   namespace = "AWS/RDS"
-  period = 3600
+  period = 600
   statistic = "Average"
   threshold = 5
-  alarm_description = "RDS instance CPU < 5% 1 hours (allocated but not used)."
+  alarm_description = "RDS instance CPU < 5% 10 mins (allocated but not used)."
   actions_enabled = true
   alarm_actions = [ var.sns_topic_arn ]
   ok_actions = [ var.sns_topic_arn ]
@@ -69,7 +69,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_zero_connections" {
   evaluation_periods = 1 # 1 hours
   metric_name = "DatabaseConnections"
   namespace = "AWS/RDS"
-  period = 3600 
+  period = 600 
   statistic = "Average"
   threshold = 1
   alarm_description = "RDS has zero active connections (unused)."
@@ -94,11 +94,11 @@ resource "aws_s3_bucket_metric" "bucket_requests" {
 
 # Now Alarm: Within 1 hour total AllRequests = 0 -> Repeat for 1 hours means breach
 resource "aws_cloudwatch_metric_alarm" "s3_unused" {
-  alarm_name = "s3-bucket-no-requests-1-hours"
+  alarm_name = "s3-bucket-no-requests-10-min"
   comparison_operator = "LessThanOrEqualToThreshold"
   threshold = 0
   evaluation_periods = 1 # 1 hour
-  period = 3600 # 
+  period = 600 # 
   metric_name = "AllRequests"
   namespace = "AWS/S3"
   statistic = "Sum"
