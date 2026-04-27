@@ -1,3 +1,5 @@
+# Lambda iam role
+
 resource "aws_iam_role" "alarm_lambda_role" {
   name = "alarm-action-lambda-role"
   assume_role_policy = jsonencode({
@@ -13,6 +15,8 @@ resource "aws_iam_role" "alarm_lambda_role" {
     ]
   })
 }
+
+# Lambda alarm policy
 
 resource "aws_iam_role_policy" "alarm_lambda_role" {
   name = "alarm-action-policy"
@@ -74,6 +78,8 @@ resource "aws_iam_role_policy" "alarm_lambda_role" {
   })
 }
 
+# Lambda Function
+
 resource "aws_lambda_function" "alarm_processor" {
   filename = var.file_name
   function_name = var.function_name
@@ -83,7 +89,7 @@ resource "aws_lambda_function" "alarm_processor" {
   memory_size = 128
   timeout = 30
 
-  source_code_hash = filebase64sha256("${var.file_name}")
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   environment {
     variables = {
@@ -94,3 +100,28 @@ resource "aws_lambda_function" "alarm_processor" {
   }
 }
 
+# lambda permission
+
+resource "aws_lambda_permission" "allow_morning_start" {
+  statement_id = "Allow-StartEC2Schedule"
+  action = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.alarm_processor.function_name
+  principal = "events.amazonaws.com"
+  source_arn = var.ec2_idle_rule_arn
+}
+
+resource "aws_lambda_permission" "allow_all_rules" {
+  for_each = [ 
+    var.ec2_idle_rule_arn,
+    var.ec2_overload_rule_arn,
+    var.rds_idle_rule_arn,
+    var.rds_zero_conn_rule,
+    var.s3_unused_rule
+   ]
+
+   statement_id = "Allow-${basename(each.key)}"
+   action = "lambda:InvokeFunction"
+   function_name = aws_lambda_function.alarm_processor.function_name
+   principal = "events.amazonaws.com"
+   source_arn = each.key
+}

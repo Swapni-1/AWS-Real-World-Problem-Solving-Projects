@@ -36,3 +36,29 @@ variable "handler" {
   type = string
   description = "Name of handler (function)"
 }
+
+variable "ec2_idle_rule_arn" {
+  type = string
+  description = "ARN of idle ec2 rule"
+}
+
+
+variable "ec2_overload_rule_arn" {
+  type = string
+  description = "ARN of overload ec2 rule"
+}
+
+variable "rds_idle_rule_arn" {
+  type = string
+  description = "ARN of idle rds rule"
+}
+
+variable "rds_zero_conn_rule" {
+  type = string
+  description = "ARN of rds zero connection rule"
+}
+
+variable "s3_unused_rule" {
+  type = string
+  description = "ARM of unused s3 rule"
+}

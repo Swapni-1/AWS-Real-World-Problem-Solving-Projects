@@ -1,4 +1,4 @@
-# 1. EC2 - Idleness Alarm (CPU < 5% for 1 hour)
+# 1. EC2 - Idleness Alarm (CPU < 5% for 15 minutes)
 resource "aws_cloudwatch_metric_alarm" "ec2_idle" {
   alarm_name = "ec2-idle-cpu-below-5-percent"
   comparison_operator = "LessThanThreshold"
@@ -8,7 +8,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_idle" {
   period = 900 # 15 mins
   statistic = "Average"
   threshold = 5
-  alarm_description = "Alarm if EC2 instance average CPU < 5% for 1 hour (idle)"
+  alarm_description = "Alarm if EC2 instance average CPU < 5% for 15 minutes (idle)"
   actions_enabled = true
   alarm_actions = [ var.sns_topic_arn ]
   ok_actions = [ var.sns_topic_arn ]
@@ -22,14 +22,14 @@ resource "aws_cloudwatch_metric_alarm" "ec2_idle" {
 
 # 2. EC2 - CPU Overloading Alarm (CPU > 75% for 10 minutes)
 resource "aws_cloudwatch_metric_alarm" "ec2_overload" {
-  alarm_name = "ec2-cpu-overload-above-75-percent"
+  alarm_name = "ec2-cpu-overload-above-and-equal-60-percent"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods = 2 # 2 periods - 10 mins if period 300
   metric_name = "CPUUtilization"
   namespace = "AWS/EC2"
   period = 300 # 5 minutes
   statistic = "Average"
-  threshold = 75
+  threshold = 60
   alarm_description = "Alarm if EC2 CPU > 75% for 10 minutes (overloaded)"
   actions_enabled = true
   alarm_actions = [var.sns_topic_arn]
@@ -40,7 +40,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_overload" {
   }
 }
 
-# 3. RDS - Capacity Allocated But Not Used (CPU < 5% for 1 hours)
+# 3. RDS - Capacity Allocated But Not Used (CPU < 5% for 10 minutes)
 resource "aws_cloudwatch_metric_alarm" "rds_idle" {
   alarm_name = "rds-idle-cpu-below-5-percent"
   comparison_operator = "LessThanThreshold"
@@ -66,10 +66,10 @@ resource "aws_cloudwatch_metric_alarm" "rds_idle" {
 resource "aws_cloudwatch_metric_alarm" "rds_zero_connections" {
   alarm_name = "rds-zero-database-connections"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods = 1 # 1 hours
+  evaluation_periods = 1 
   metric_name = "DatabaseConnections"
   namespace = "AWS/RDS"
-  period = 600 
+  period = 600 # 10 minutes
   statistic = "Average"
   threshold = 1
   alarm_description = "RDS has zero active connections (unused)."
@@ -97,12 +97,12 @@ resource "aws_cloudwatch_metric_alarm" "s3_unused" {
   alarm_name = "s3-bucket-no-requests-10-min"
   comparison_operator = "LessThanOrEqualToThreshold"
   threshold = 0
-  evaluation_periods = 1 # 1 hour
-  period = 600 # 
+  evaluation_periods = 1 
+  period = 600 # 10 minutes
   metric_name = "AllRequests"
   namespace = "AWS/S3"
   statistic = "Sum"
-  alarm_description = "Alarm when S3 bucket has zero requests for 24 consecutive hours (old logs/unused backups)."
+  alarm_description = "Alarm when S3 bucket has zero requests for 10 consecutive minutes (old logs/unused backups)."
   actions_enabled = true
   alarm_actions = [ var.sns_topic_arn ]
   ok_actions = [ var.sns_topic_arn ]
