@@ -28,7 +28,7 @@ WINDOW_START_HOUR=9
 WINDOW_END_HOUR=21
 BASELINE_LOAD=30
 SPIKE_LOAD=77                # midpoint of 75-80
-SPIKE_DURATION=300           # seconds
+SPIKE_DURATION=300           # 5 seconds
 SPIKE_MIN_COUNT=1
 SPIKE_MAX_COUNT=5
 CHECK_INTERVAL=30            # seconds
@@ -37,8 +37,7 @@ CHECK_INTERVAL=30            # seconds
 log() { echo "[$(date '+%F %T %Z')] $*" >&2; }
 
 rand_int() {
-    local min=$1 max=$2
-    echo $(( min + RANDOM % (max - min + 1) ))
+    echo $(( SPIKE_MIN_COUNT + RANDOM % (SPIKE_MAX_COUNT - SPIKE_MIN_COUNT + 1) ))  
 }
 
 kill_stress() {
