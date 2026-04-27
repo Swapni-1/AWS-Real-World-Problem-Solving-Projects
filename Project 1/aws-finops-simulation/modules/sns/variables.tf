@@ -5,7 +5,7 @@ variable "sns_topic_name" {
 }
 
 variable "alert_email" {
-  default = "lojale9219@poisonword.com"
+  default = "swapnil.cloud.dev@hotmail.com"
   type = string
   description = "Email of subscriber"
 }
