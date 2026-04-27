@@ -15,7 +15,7 @@
 
 # }
 
-# # Rule 2 - EC2 Overloaded (CPU >= 75%)
+# # Rule 2 - EC2 Overloaded (CPU >= 60%)
 # resource "aws_cloudwatch_event_rule" "ec2_overload_rule" {
 #   name = "capture-ec2-overload-alarm"
 #   description = "Trigger action when EC2 instance is overloaded"
@@ -63,7 +63,7 @@
 #   })
 # }
 
-# # Rule 5 - S3 Unused (AllRequests = 0 for 24h)
+# # Rule 5 - S3 Unused (AllRequests = 0 for 10mins)
 # resource "aws_cloudwatch_event_rule" "s3_unused_rule" {
 #   name = "capture-s3-unused-alarm"
 #   description = "Trigger action when S3 bucket has no requests for 24 hours"

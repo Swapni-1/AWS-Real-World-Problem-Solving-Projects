@@ -35,3 +35,8 @@ variable "sns_topic_arn" {
   description = "arn of sns topic"
   type = string
 }
+
+# variable "aws_lambda_function_alarm_processor_arn" {
+#   description = "ARN value of lambda function"
+#   type = string
+# }

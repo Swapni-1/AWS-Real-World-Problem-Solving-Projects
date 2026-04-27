@@ -20,7 +20,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_idle" {
   treat_missing_data = "notBreaching" # if instance stops then stop the alarm
 }
 
-# 2. EC2 - CPU Overloading Alarm (CPU > 75% for 10 minutes)
+# 2. EC2 - CPU Overloading Alarm (CPU >= 60% for 10 minutes)
 resource "aws_cloudwatch_metric_alarm" "ec2_overload" {
   alarm_name = "ec2-cpu-overload-above-and-equal-60-percent"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -66,10 +66,10 @@ resource "aws_cloudwatch_metric_alarm" "rds_idle" {
 resource "aws_cloudwatch_metric_alarm" "rds_zero_connections" {
   alarm_name = "rds-zero-database-connections"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods = 1 
+  evaluation_periods = 24 # 24 hours 
   metric_name = "DatabaseConnections"
   namespace = "AWS/RDS"
-  period = 600 # 10 minutes
+  period = 3600 # 60 minutes
   statistic = "Average"
   threshold = 1
   alarm_description = "RDS has zero active connections (unused)."
@@ -84,7 +84,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_zero_connections" {
   treat_missing_data = "notBreaching"
 }
 
-# 5. S3 - Old Logs & Unused Backups (no request for 7 days)
+# 5. S3 - Old Logs & Unused Backups (no request for 24 hours)
 
 # First of all requrest enable request matrics
 resource "aws_s3_bucket_metric" "bucket_requests" {
@@ -92,17 +92,17 @@ resource "aws_s3_bucket_metric" "bucket_requests" {
   name = "EntireBucket"
 }
 
-# Now Alarm: Within 1 hour total AllRequests = 0 -> Repeat for 1 hours means breach
+# Now Alarm: Within 1 hour total AllRequests = 0 -> Repeat for 24 hours means breach
 resource "aws_cloudwatch_metric_alarm" "s3_unused" {
   alarm_name = "s3-bucket-no-requests-10-min"
   comparison_operator = "LessThanOrEqualToThreshold"
   threshold = 0
-  evaluation_periods = 1 
-  period = 600 # 10 minutes
+  evaluation_periods = 24 # hours
+  period = 3600 # 60 minutes
   metric_name = "AllRequests"
   namespace = "AWS/S3"
   statistic = "Sum"
-  alarm_description = "Alarm when S3 bucket has zero requests for 10 consecutive minutes (old logs/unused backups)."
+  alarm_description = "Alarm when S3 bucket has zero requests for 24 consecutive hours (old logs/unused backups)."
   actions_enabled = true
   alarm_actions = [ var.sns_topic_arn ]
   ok_actions = [ var.sns_topic_arn ]
