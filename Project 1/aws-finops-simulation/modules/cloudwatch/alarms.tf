@@ -94,11 +94,11 @@ resource "aws_s3_bucket_metric" "bucket_requests" {
 
 # Now Alarm: Within 1 hour total AllRequests = 0 -> Repeat for 1 hours means breach
 resource "aws_cloudwatch_metric_alarm" "s3_unused" {
-  alarm_name = "s3-bucket-no-requests-24-hours"
+  alarm_name = "s3-bucket-no-requests-1-hours"
   comparison_operator = "LessThanOrEqualToThreshold"
   threshold = 0
   evaluation_periods = 1 # 1 hour
-  period = 3600 # 5 mins
+  period = 3600 # 
   metric_name = "AllRequests"
   namespace = "AWS/S3"
   statistic = "Sum"

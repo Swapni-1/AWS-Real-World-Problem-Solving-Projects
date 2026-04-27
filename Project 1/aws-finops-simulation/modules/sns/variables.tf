@@ -5,7 +5,7 @@ variable "sns_topic_name" {
 }
 
 variable "alert_email" {
-  default = "swapnillakra822@gmail.com"
+  default = "lojale9219@poisonword.com"
   type = string
   description = "Email of subscriber"
 }

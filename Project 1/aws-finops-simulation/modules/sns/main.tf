@@ -17,7 +17,7 @@ resource "aws_sns_topic_policy" "allow_cloudwatch" {
     Version = "2012-10-17"
     Statement = [
         {
-            Sid = "FirstStatementOwnerOnly"
+            Sid    = "FirstStatementOwnerOnly" # Unique ID for 1st statement
             Effect = "Allow"
             Principal = {
                 AWS = "*"
@@ -40,12 +40,12 @@ resource "aws_sns_topic_policy" "allow_cloudwatch" {
             }
         },
         {
-            Sid    = "CloudWatchPublishPermission"
+            Sid    = "CloudWatchPublishPermission" # Unique ID for 2nd statement
             Effect = "Allow"
             Principal = {
                 Service = "cloudwatch.amazonaws.com"
             }
-            Action = "sns:Publish"
+            Action   = "SNS:Publish"
             Resource = aws_sns_topic.my_sns.arn
         }
     ]
