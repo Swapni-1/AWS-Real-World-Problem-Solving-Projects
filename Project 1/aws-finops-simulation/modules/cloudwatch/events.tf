@@ -12,7 +12,6 @@
 #         }
 #       }
 #    })
-
 # }
 
 # # Rule 2 - EC2 Overloaded (CPU >= 60%)
@@ -31,7 +30,7 @@
 #   })
 # }
 
-# # Rule 3 - RDS Idle (CPU < 5%)
+# Rule 3 - RDS Idle (CPU < 5%)
 # resource "aws_cloudwatch_event_rule" "rds_idle_rule" {
 #   name = "capture-rds-idle-alarm"
 #   description = "Trigger action when RDS instance is idle"

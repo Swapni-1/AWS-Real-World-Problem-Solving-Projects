@@ -59,7 +59,7 @@ resource "aws_cloudwatch_dashboard" "central_monitoring" {
         type   = "metric"
         x      = 0
         y      = 6
-        width  = 6
+        width  = 12
         height = 6
         properties = {
           metrics = [
@@ -72,9 +72,9 @@ resource "aws_cloudwatch_dashboard" "central_monitoring" {
       },
       {
         type   = "metric"
-        x      = 6
+        x      = 12
         y      = 6
-        width  = 6
+        width  = 12
         height = 6
         properties = {
           metrics = [
@@ -85,38 +85,38 @@ resource "aws_cloudwatch_dashboard" "central_monitoring" {
           title   = "RDS Database Connections"
         }
       },
-      # RDS Idle Alarm
-      {
-        type   = "metric"
-        x      = 12
-        y      = 6
-        width  = 6
-        height = 6
-        properties = {
-          metrics = [
-             ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.rds_idle.alarm_name]
-          ]
-          view    = "singleValue"
-          region  = var.aws_region
-          title   = "RDS Idle Alarm State"
-        }
-      },
-      # RDS Zero Connections Alarm
-      {
-        type   = "metric"
-        x      = 18
-        y      = 6
-        width  = 6
-        height = 6
-        properties = {
-          metrics = [
-            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.rds_zero_connections.alarm_name]
-          ]
-          view    = "singleValue"
-          region  = var.aws_region
-          title   = "RDS Zero Connections Alarm"
-        }
-      },
+      # # RDS Idle Alarm
+      # {
+      #   type   = "metric"
+      #   x      = 12
+      #   y      = 6
+      #   width  = 6
+      #   height = 6
+      #   properties = {
+      #     metrics = [
+      #        ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.rds_idle.alarm_name]
+      #     ]
+      #     view    = "singleValue"
+      #     region  = var.aws_region
+      #     title   = "RDS Idle Alarm State"
+      #   }
+      # },
+      # # RDS Zero Connections Alarm
+      # {
+      #   type   = "metric"
+      #   x      = 18
+      #   y      = 6
+      #   width  = 6
+      #   height = 6
+      #   properties = {
+      #     metrics = [
+      #       ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.rds_zero_connections.alarm_name]
+      #     ]
+      #     view    = "singleValue"
+      #     region  = var.aws_region
+      #     title   = "RDS Zero Connections Alarm"
+      #   }
+      # },
 
       # ---------- Row 3: S3 ----------
       {
@@ -128,14 +128,45 @@ resource "aws_cloudwatch_dashboard" "central_monitoring" {
         properties = {
           metrics = [
             # S3 metrics dimensions (BucketName, StorageType) array mein sahi se daalein
-            ["AWS/S3", "AllRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { stat = "Sum", period = 300 }]
+            ["AWS/S3", "GetRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { stat = "Sum", period = 300 }]
           ]
           view    = "timeSeries"
           region  = var.aws_region
-          title   = "S3 Bucket Daily Requests"
+          title   = "S3 Bucket Daily GET Requests"
         }
       },
-      # S3 Unused Alarm
+       {
+        type   = "metric"
+        x      = 0
+        y      = 18
+        width  = 12
+        height = 6
+        properties = {
+          metrics = [
+            # S3 metrics dimensions (BucketName, StorageType) array mein sahi se daalein
+            ["AWS/S3", "PutRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { stat = "Sum", period = 300 }]
+          ]
+          view    = "timeSeries"
+          region  = var.aws_region
+          title   = "S3 Bucket Daily PUT Requests"
+        }
+      },
+       {
+        type   = "metric"
+        x      = 12
+        y      = 18
+        width  = 12
+        height = 6
+        properties = {
+          metrics = [
+            # S3 metrics dimensions (BucketName, StorageType) array mein sahi se daalein
+            ["AWS/S3", "PostRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { stat = "Sum", period = 300 }]
+          ]
+          view    = "timeSeries"
+          region  = var.aws_region
+          title   = "S3 Bucket Daily POST Requests"
+        }
+      },
       {
         type   = "metric"
         x      = 12
@@ -144,11 +175,73 @@ resource "aws_cloudwatch_dashboard" "central_monitoring" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_unused.alarm_name]
+            # S3 metrics dimensions (BucketName, StorageType) array mein sahi se daalein
+            ["AWS/S3", "DeleteRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { stat = "Sum", period = 300 }]
+          ]
+          view    = "timeSeries"
+          region  = var.aws_region
+          title   = "S3 Bucket Daily DELETE Requests"
+        }
+      },
+      # S3 Unused Alarms (GET,PUT,POST,DELETE)
+      {
+        type   = "metric"
+        x      = 0
+        y      = 24
+        width  = 6
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_get_requests.alarm_name]
           ]
           view    = "singleValue"
           region  = var.aws_region
-          title   = "S3 Unused Bucket Alarm State"
+          title   = "S3 GET Requests Bucket Alarm State"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 6
+        y      = 24
+        width  = 6
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_put_requests.alarm_name]
+          ]
+          view    = "singleValue"
+          region  = var.aws_region
+          title   = "S3 PUT Requests Bucket Alarm State"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 24
+        width  = 6
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_post_requests.alarm_name]
+          ]
+          view    = "singleValue"
+          region  = var.aws_region
+          title   = "S3 POST Requests Bucket Alarm State"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 18
+        y      = 24
+        width  = 6
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_delete_requests.alarm_name]
+          ]
+          view    = "singleValue"
+          region  = var.aws_region
+          title   = "S3 DELETE Requests Bucket Alarm State"
         }
       }
     ]
