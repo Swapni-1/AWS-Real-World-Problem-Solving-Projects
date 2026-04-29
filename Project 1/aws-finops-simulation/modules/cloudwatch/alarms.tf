@@ -41,147 +41,229 @@ resource "aws_cloudwatch_metric_alarm" "ec2_overload" {
 }
 
 # 3. RDS - Capacity Allocated But Not Used (CPU < 5% for 10 minutes)
-# resource "aws_cloudwatch_metric_alarm" "rds_idle" {
-#   alarm_name = "rds-idle-cpu-below-5-percent"
-#   comparison_operator = "LessThanThreshold"
-#   evaluation_periods = 1
-#   metric_name = "CPUUtilization"
-#   namespace = "AWS/RDS"
-#   period = 600
-#   statistic = "Average"
-#   threshold = 5
-#   alarm_description = "RDS instance CPU < 5% 10 mins (allocated but not used)."
-#   actions_enabled = true
-#   alarm_actions = [ var.sns_topic_arn ]
-#   ok_actions = [ var.sns_topic_arn ]
+resource "aws_cloudwatch_metric_alarm" "rds_idle" {
+  alarm_name = "rds-idle-cpu-below-5-percent"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods = 1
+  metric_name = "CPUUtilization"
+  namespace = "AWS/RDS"
+  period = 600
+  statistic = "Average"
+  threshold = 5
+  alarm_description = "RDS instance CPU < 5% 10 mins (allocated but not used)."
+  actions_enabled = true
+  alarm_actions = [ var.sns_topic_arn ]
+  ok_actions = [ var.sns_topic_arn ]
 
-#   dimensions = {
-#     DBInstanceIdentifier = var.rds_instance_identifier
-#   }
+  dimensions = {
+    DBInstanceIdentifier = var.rds_instance_identifier
+  }
 
-#   treat_missing_data = "notBreaching"
-# }
+  treat_missing_data = "notBreaching"
+}
 
 # 4. RDS zero database connections
-# resource "aws_cloudwatch_metric_alarm" "rds_zero_connections" {
-#   alarm_name = "rds-zero-database-connections"
-#   comparison_operator = "LessThanThreshold"
-#   evaluation_periods = 1 # 1 hours 
-#   metric_name = "DatabaseConnections"
-#   namespace = "AWS/RDS"
-#   period = 3600 # 60 minutes
-#   statistic = "Average"
-#   threshold = 1
-#   alarm_description = "RDS has zero active connections (unused)."
-#   actions_enabled = true
-#   alarm_actions = [ var.sns_topic_arn ]
-#   ok_actions = [ var.sns_topic_arn ]
+resource "aws_cloudwatch_metric_alarm" "rds_zero_connections" {
+  alarm_name = "rds-zero-database-connections"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods = 1 # 1 hours 
+  metric_name = "DatabaseConnections"
+  namespace = "AWS/RDS"
+  period = 3600 # 60 minutes
+  statistic = "Average"
+  threshold = 1
+  alarm_description = "RDS has zero active connections (unused)."
+  actions_enabled = true
+  alarm_actions = [ var.sns_topic_arn ]
+  ok_actions = [ var.sns_topic_arn ]
   
-#   dimensions = {
-#     DBInstanceIdentifier = var.rds_instance_identifier
-#   }
+  dimensions = {
+    DBInstanceIdentifier = var.rds_instance_identifier
+  }
 
-#   treat_missing_data = "notBreaching"
-# }
+  treat_missing_data = "notBreaching"
+}
 
 # 5. S3 - Old Logs & Unused Backups (no request for 24 hours)
 
-# S3 - GET Requests Alarm
-resource "aws_cloudwatch_metric_alarm" "s3_get_requests" {
-  alarm_name = "${var.s3_bucket_name}-no-get-requests"
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods = 1 # 1 hour
-  metric_name = "GetRequests"
-  namespace = "AWS/S3"
-  period = 3600 # 60 minutes
-  statistic = "Sum"
-  threshold = 1
-  alarm_description = "Alarm when S3 GET Requests exceeds threshold (60-mins sum)"
+# # S3 - GET Requests Alarm
+# resource "aws_cloudwatch_metric_alarm" "s3_get_requests" {
+#   alarm_name = "${var.s3_bucket_name}-no-get-requests"
+#   comparison_operator = "LessThanThreshold"
+#   evaluation_periods = 1 # 1 hour
+#   metric_name = "GetRequests"
+#   namespace = "AWS/S3"
+#   period = 3600 # 60 minutes
+#   statistic = "Sum"
+#   threshold = 1
+#   alarm_description = "Alarm when S3 GET Requests exceeds threshold (60-mins sum)"
 
-  actions_enabled = var.sns_topic_arn != "" ? true : false
-  alarm_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
-  ok_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
+#   actions_enabled = var.sns_topic_arn != "" ? true : false
+#   alarm_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
+#   ok_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
 
-  dimensions = {
-    BucketName = var.s3_bucket_name
-    FilterId = "EntireBucket"
-    StorageType = "AllStorageType"
+#   dimensions = {
+#     BucketName = var.s3_bucket_name
+#     FilterId = "EntireBucket"
+#     StorageType = "AllStorageType"
+#   }
+
+#   treat_missing_data = "breaching"
+# }
+
+# # S3 PUT Requests Alarm
+# resource "aws_cloudwatch_metric_alarm" "s3_put_requests" {
+#   alarm_name = "${var.s3_bucket_name}-no-put-requests"
+#   comparison_operator = "LessThanThreshold"
+#   evaluation_periods = 1 # 1 hour
+#   metric_name = "PutRequests"
+#   namespace = "AWS/S3"
+#   period = 3600 # 60 minutes
+#   statistic = "Sum"
+#   threshold = 1
+#   alarm_description = "Alarm when S3 PUT Requests exceeds threshold (60-mins sum)"
+
+#   actions_enabled = var.sns_topic_arn != "" ? true : false
+#   alarm_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
+#   ok_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
+
+#   dimensions = {
+#     BucketName = var.s3_bucket_name
+#     FilterId = "EntireBucket"
+#     StorageType = "AllStorageType"
+#   }
+
+#   treat_missing_data = "breaching"
+# }
+
+# # S3 POST Requests Alarm
+# resource "aws_cloudwatch_metric_alarm" "s3_post_requests" {
+#   alarm_name = "${var.s3_bucket_name}-no-post-requests"
+#   comparison_operator = "LessThanThreshold"
+#   evaluation_periods = 1 # 1 hour
+#   metric_name = "PostRequests"
+#   namespace = "AWS/S3"
+#   period = 3600 # 60 minutes
+#   statistic = "Sum"
+#   threshold = 1
+#   alarm_description = "Alarm when S3 POST Requests exceeds threshold (60-mins sum)"
+
+#   actions_enabled = var.sns_topic_arn != "" ? true : false
+#   alarm_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
+#   ok_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
+
+#   dimensions = {
+#     BucketName = var.s3_bucket_name
+#     FilterId = "EntireBucket"
+#     StorageType = "AllStorageType"
+#   }
+
+#   treat_missing_data = "breaching"
+# }
+
+
+# # S3 DELETE Requests Alarm
+# resource "aws_cloudwatch_metric_alarm" "s3_delete_requests" {
+#   alarm_name = "${var.s3_bucket_name}-no-delete-requests"
+#   comparison_operator = "LessThanThreshold"
+#   evaluation_periods = 1 # 1 hour
+#   metric_name = "DeleteRequests"
+#   namespace = "AWS/S3"
+#   period = 3600 # 60 minutes
+#   statistic = "Sum"
+#   threshold = 1
+#   alarm_description = "Alarm when S3 DELETE Requests exceeds threshold (60-mins sum)"
+
+#   actions_enabled = var.sns_topic_arn != "" ? true : false
+#   alarm_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
+#   ok_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
+
+#   dimensions = {
+#     BucketName = var.s3_bucket_name
+#     FilterId = "EntireBucket"
+#     StorageType = "AllStorageType"
+#   }
+
+#   treat_missing_data = "breaching"
+# }
+
+resource "aws_cloudwatch_metric_alarm" "s3_no_requests" {
+  alarm_name = "s3-no-requests"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  threshold = 0
+  evaluation_periods = 1 # 1 hours
+
+  alarm_description = "Alarm when no S3 activity (GET, PUT, POST, DELETE)"
+
+  actions_enabled = true
+  alarm_actions = [var.sns_topic_arn]
+  ok_actions = [var.sns_topic_arn]
+
+  metric_query {
+    id = "e1"
+    expression = "m1 + m2 + m3 + m4"
+    label = "TotalRequests"
+    return_data = true
   }
 
-  treat_missing_data = "breaching"
-}
-
-# S3 PUT Requests Alarm
-resource "aws_cloudwatch_metric_alarm" "s3_put_requests" {
-  alarm_name = "${var.s3_bucket_name}-no-put-requests"
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods = 1 # 1 hour
-  metric_name = "PutRequests"
-  namespace = "AWS/S3"
-  period = 3600 # 60 minutes
-  statistic = "Sum"
-  threshold = 1
-  alarm_description = "Alarm when S3 PUT Requests exceeds threshold (60-mins sum)"
-
-  actions_enabled = var.sns_topic_arn != "" ? true : false
-  alarm_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
-  ok_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
-
-  dimensions = {
-    BucketName = var.s3_bucket_name
-    FilterId = "EntireBucket"
-    StorageType = "AllStorageType"
+  metric_query {
+    id = "m1"
+    metric {
+      metric_name = "GetRequests"
+      namespace = "AWS/S3"
+      period = 3600
+      stat = "Sum"
+      dimensions = {
+        BucketName = var.s3_bucket_name
+        FilterId = "EntireBucket"
+        StorageType = "AllStorageType"
+      }
+    }
   }
 
-  treat_missing_data = "breaching"
-}
-
-# S3 POST Requests Alarm
-resource "aws_cloudwatch_metric_alarm" "s3_post_requests" {
-  alarm_name = "${var.s3_bucket_name}-no-post-requests"
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods = 1 # 1 hour
-  metric_name = "PostRequests"
-  namespace = "AWS/S3"
-  period = 3600 # 60 minutes
-  statistic = "Sum"
-  threshold = 1
-  alarm_description = "Alarm when S3 POST Requests exceeds threshold (60-mins sum)"
-
-  actions_enabled = var.sns_topic_arn != "" ? true : false
-  alarm_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
-  ok_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
-
-  dimensions = {
-    BucketName = var.s3_bucket_name
-    FilterId = "EntireBucket"
-    StorageType = "AllStorageType"
+  metric_query {
+    id = "m2"
+    metric {
+      metric_name = "PutRequests"
+      namespace = "AWS/S3"
+      period = 3600
+      stat = "Sum"
+      dimensions = {
+        BucketName = var.s3_bucket_name
+        FilterId = "EntireBucket"
+        StorageType = "AllStorageType"
+      }
+    }
   }
 
-  treat_missing_data = "breaching"
-}
+  metric_query {
+    id = "m3"
+    metric {
+      metric_name = "PostRequests"
+      namespace = "AWS/S3"
+      period = 3600
+      stat = "Sum"
+      dimensions = {
+        BucketName = var.s3_bucket_name
+        FilterId = "EntireBucket"
+        StorageType = "AllStorageType"
+      }
+    }
+  }
 
-
-# S3 DELETE Requests Alarm
-resource "aws_cloudwatch_metric_alarm" "s3_delete_requests" {
-  alarm_name = "${var.s3_bucket_name}-no-delete-requests"
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods = 1 # 1 hour
-  metric_name = "DeleteRequests"
-  namespace = "AWS/S3"
-  period = 3600 # 60 minutes
-  statistic = "Sum"
-  threshold = 1
-  alarm_description = "Alarm when S3 DELETE Requests exceeds threshold (60-mins sum)"
-
-  actions_enabled = var.sns_topic_arn != "" ? true : false
-  alarm_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
-  ok_actions = var.sns_topic_arn != "" ? [ var.sns_topic_arn ] : []
-
-  dimensions = {
-    BucketName = var.s3_bucket_name
-    FilterId = "EntireBucket"
-    StorageType = "AllStorageType"
+  metric_query {
+    id = "m4"
+    metric {
+      metric_name = "DeleteRequests"
+      namespace = "AWS/S3"
+      period = 3600
+      stat = "Sum"
+      dimensions = {
+        BucketName = var.s3_bucket_name
+        FilterId = "EntireBucket"
+        StorageType = "AllStorageType"
+      }
+    }
   }
 
   treat_missing_data = "breaching"
