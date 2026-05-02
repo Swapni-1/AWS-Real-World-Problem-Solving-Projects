@@ -6,6 +6,62 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
     
     widgets = [
       # ===========
+      # EC2 SECTION
+      # ===========
+
+      # 1. Waste Detector 
+      {
+        type = "metric"
+        properties = {
+          title = "ASG Waste Detector (Avg CPU < 5%)"
+          region = var.aws_region
+
+          metric = [
+            ["AWS/EC2","CPUUtilization","AutoScalingGroupName",var.asg_name, { stat = "Average" }]
+          ]
+
+          view = "timeSeries"
+          stacked = false
+          yAxis = { left = { min = 0, max = 100 } }
+          annotations = {
+            horizontal = [
+              {
+                label = "Idle threshold (5%)"
+                value = 5
+                fill = "none"
+                color = "#d13212"
+              }
+            ]
+          }
+          period = 300
+        }
+        x = 0
+        y = 0
+        width = 12
+        height = 6
+      },
+
+      # 2. Traffic and Compute Correlation
+      {
+
+      },
+
+      # 3. Spike Handler - Max CPU and Instance Count
+      {
+
+      },
+
+      # 4. Cost-Saving Timer 
+      {
+
+      },
+
+      # 5. Credit Balance (Aggregate for ASG)
+      {
+
+      },
+
+      # ===========
       # RDS SECTION
       # ===========
 

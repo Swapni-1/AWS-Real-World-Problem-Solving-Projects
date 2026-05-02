@@ -28,69 +28,74 @@ resource "aws_s3_bucket" "my_bucket" {
   }
 }
 
-# #1 IAM Role
-# resource "aws_iam_role" "ec2_s3_access_role" {
-#   name = "ec2_s3_access_role"
+#1 IAM Role
+resource "aws_iam_role" "ec2_s3_access_role" {
+  name = "ec2_s3_access_role"
 
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Action = "sts:AssumeRole"
-#         Effect = "Allow"
-#         Principal = {
-#           Service = "ec2.amazonaws.com"
-#         }
-#       }
-#     ]
-#   })
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
 
-#   tags = {
-#     Name = "ec2-s3-access-role"
-#     Purpose = "ec2-to-s3-access"
-#     Workload = "iam"
-#     RoleType = "access-role"
-#     ManagedBy = "terraform"
-#   }
-# }
+  tags = {
+    Name = "ec2-s3-access-role"
+    Purpose = "ec2-to-s3-access"
+    Workload = "iam"
+    RoleType = "access-role"
+    ManagedBy = "terraform"
+  }
+}
 
-# #2. EC2 Access Policy
-# resource "aws_iam_role_policy" "s3_policy" {
-#   name = "ec2_s3_policy"
-#   role = aws_iam_role.ec2_s3_access_role.id
+#2. EC2 Access Policy
+resource "aws_iam_role_policy" "s3_policy" {
+  name = "ec2_s3_policy"
+  role = aws_iam_role.ec2_s3_access_role.id
 
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Action   = ["s3:GetObject", "s3:PutObject"]
-#         Effect   = "Allow"
-#         Resource = [
-#           aws_s3_bucket.my_bucket.arn,
-#           "${aws_s3_bucket.my_bucket.arn}/*"
-#         ]
-#       }
-#     ]
-#   })
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["s3:GetObject", "s3:PutObject"]
+        Effect   = "Allow"
+        Resource = [
+          aws_s3_bucket.my_bucket.arn,
+          "${aws_s3_bucket.my_bucket.arn}/*"
+        ]
+      }
+    ]
+  })
 
-# }
+}
 
-# # 3. Instance Profile
-# resource "aws_iam_instance_profile" "ec2_profile" {
-#   name = var.bucket_name
-#   role = aws_iam_role.ec2_s3_access_role.name
+# 3. Instance Profile
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = var.bucket_name
+  role = aws_iam_role.ec2_s3_access_role.name
 
-#   tags = {
-#     Name = "ec2-instance-profile"
-#     Purpose = "ec2-s3-access"
-#     Workload = "iam"
-#     ManagedBy = "terraform"
-#   }
-# }
+  tags = {
+    Name = "ec2-instance-profile"
+    Purpose = "ec2-s3-access"
+    Workload = "iam"
+    ManagedBy = "terraform"
+  }
+}
 
+# 4. S3 Gateway Endpoint
+resource "aws_vpc_endpoint" "s3_gateway" {
+  vpc_id = var.vpc_id
+  service_name = "com.amazonaws.${var.aws_region}.s3"
 
-# # 4. SSM Managed Policy
-# resource "aws_iam_role_policy_attachment" "ssm_managed_role" {
-#   role = aws_iam_role.ec2_s3_access_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-# }
+  route_table_ids = [var.route_table_id]
+
+  tags = {
+    Name = "s3-gateway-endpoint"
+  }
+}

@@ -4,10 +4,10 @@ variable "aws_region" {
   default = "ap-south-2"
 }
 
-# variable "ec2_instances_id" {
-#   description = "EC2 instance ID to monitor"
-#   type = string
-# }
+variable "asg_name" {
+  description = "Name of Auto Scaling Group"
+  type = string
+}
 
 variable "rds_instance_id" {
   description = "RDS instance id"
