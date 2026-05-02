@@ -19,10 +19,10 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           metrics = [
             ["AWS/RDS","FreeStorageSpace","DBInstanceIdentifier",var.rds_instance_id,{ stat = "Minimum" }]
           ]
-          view = "guage"
-          yAxis = { left = { min = 0 } }
+          view = "gauge"
+          yAxis = { left = { min = 0, max = 100 } }
           period = 3600
-          stat = "Minimum"
+          annotations = {}
         }
         x = 12
         y = 12
@@ -41,7 +41,6 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             ["AWS/RDS","DatabaseConnections","DBInstanceIdentifier",var.rds_instance_id, { stat = "Maximum" } ]
           ]
           view = "timeSeries"
-          stacked = false
           annotations = {
             horizontal = [{
               label = "Idle threshold (1 conn)"
@@ -51,7 +50,6 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             }]
           }
           period = 300
-          stat = "Maximum"
         }
         x = 0
         y = 18
@@ -71,7 +69,6 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           ]
 
           view = "timeSeries"
-          stacked = false
           annotations = {
             horizontal = [{
               label = "Idle compute threshold"
@@ -81,7 +78,6 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             }]
           }
           period = 300
-          stat = "Average"
         }
         x = 12
         y = 18
@@ -93,7 +89,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
       {
         type = "metric"
         properties = {
-          title = "RDS I/O Activity - Background tasks?"
+          title = "RDS I/O Activity (ReadIOPS + WriteIOPS)"
           region = var.aws_region
           metrics = [
             ["AWS/RDS","ReadIOPS","DBInstanceIdentifier",var.rds_instance_id, { stat = "Sum" }],
@@ -101,8 +97,8 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           ]
           view = "timeSeries"
           stacked = true
-          yAxis = { left = { label = "IOPS" } }
           period = 300
+          annotations = {}
         }
         x = 0
         y = 24
@@ -135,18 +131,16 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
       {
         type = "metric"
         properties = {
-          title = "S3 Storage Class Composition (Lifecycle success)"
+          title = "S3 Storage Class Byte (Standard)"
           region = var.aws_region
 
           metrics = [
-            { expression = "SEARCH('{AWS/S3,BucketName,StorageClass} BucketSizeBytes','Average', 86400)", label = "ByClass", id = "e1", visible = false },
-            { expression = "SERVICE_QUOTA(e1,10)", label = "Standard", id = "std", stat = "Average", period = 86400 },
-            { expression = "SERVICE_QUOTA(e1,20)", label = "Glacier/DeepArchive", id = "glacier", stat = "Average", period = 86400 }
+           ["AWS/S3","BucketSizeBytes","BucketName",var.s3_bucket_name,"StorageClass","Standard", { stat = "Average", period = 86400 }]
           ]
-
-          view = "pie"
+          view = "timeSeries"
           period = 86400
-          stat = "Average"
+          stacked = false
+          annotations = {}
         }
         x = 0
         y = 0
@@ -159,16 +153,15 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
         type = "metric"
 
         properties = {
-          title = "Ghost Bucket? (Requests last 30 days)"
+          title = "Ghost Bucket Detector - AllRequests"
           region = var.aws_region
 
           metrics = [
-            { expression = "SUM(SEARCH('{AWS/S3,BucketName} MetricName=\"AllRequests\"','Sum',86400))", label = "Daily total requests", id = "req", stat = "Sum", period = 86400 }
+            ["AWS/S3","AllRequests", "BucketName", var.s3_bucket_name,{ stat = "Sum", period = 86400 }]
           ]
           view = "singleValue"
           period = 86400
-          stat = "Sum"
-          setPeriodToTimeRange = false
+          annotations = {}
         }
         x = 8
         y = 30
@@ -187,9 +180,8 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             ["AWS/S3","NumberOfObjects","BucketName",var.s3_bucket_name,"StorageClass","AllStorageTypes", { stat = "Average" }]
           ]
           view = "timeSeries"
-          stacked = false
           period = 86400
-          stat = "Average"
+          annotations = {}
         }
         x = 12
         y = 30
@@ -210,9 +202,8 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           ]
 
           view = "bar"
-          stacked = false
           period = 86400
-          stat = "Sum"
+          annotations = {}
         }
 
         x = 18
@@ -223,7 +214,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
 
       # 15. Cost-Saving Summary Text for S3
       {
-        type = "metric"
+        type = "text"
         properties = {
           markdown = <<-EOT
             ## 🧊 S3 Cost Savings
@@ -233,6 +224,10 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             - **Expiration policy:** Delete old backups after 90 days. 
           EOT
         }
+        x = 0
+        y = 36
+        width = 24
+        height = 3
       } 
     ]
   })
