@@ -1,4 +1,4 @@
-resource "aws_cloudwatch_dashboard" "finops-dashboard" {
+resource "aws_cloudwatch_dashboard" "finops_dashboard" {
   dashboard_name = "FinOps-Dashboard"
 
   dashboard_body = jsonencode({
