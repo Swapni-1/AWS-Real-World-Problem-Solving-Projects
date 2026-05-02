@@ -8,7 +8,7 @@ resource "aws_vpc" "my_vpc" {
   }
 }
 
-resource "aws_subnet" "public_subnet" {
+resource "aws_subnet" "public_subnet_1" {
   vpc_id = aws_vpc.my_vpc.id
   cidr_block = var.public_subnet_cidr
   availability_zone = "ap-south-2a"
@@ -17,7 +17,22 @@ resource "aws_subnet" "public_subnet" {
     Name = "public-subnet"
     Tier = "public"
     Role = "web-tier"
-    Workload = "ec2"
+    Workload = "alb"
+    Access = "internet-facing"
+  }
+}
+
+
+resource "aws_subnet" "public_subnet_2" {
+  vpc_id = aws_vpc.my_vpc.id
+  cidr_block = var.public_subnet_cidr
+  availability_zone = "ap-south-2a"
+
+  tags = {
+    Name = "public-subnet"
+    Tier = "public"
+    Role = "web-tier"
+    Workload = "alb"
     Access = "internet-facing"
   }
 }
@@ -31,7 +46,7 @@ resource "aws_subnet" "private_subnet_1" {
     Name = "private-subnet"
     Tier = "private"
     Role = "database-tier"
-    Workload = "rds"
+    Workload = "ec2 and rds"
     Access = "internal"  
   }
 }
@@ -39,7 +54,7 @@ resource "aws_subnet" "private_subnet_1" {
 resource "aws_subnet" "private_subnet_2" {
   vpc_id = aws_vpc.my_vpc.id
   cidr_block = var.private_subnet_2_cidr
-  availability_zone = "ap-south-2b"
+  availability_zone = "ap-south-2a"
 
   tags = {
     Name = "private-subnet"

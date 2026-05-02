@@ -42,6 +42,10 @@ variable "ec2_idle_rule_arn" {
   description = "ARN of idle ec2 rule"
 }
 
+variable "ec2_start_rule_arn" {
+  type = string
+  description = "ARN of ec2 start rule"
+}
 
 variable "ec2_overload_rule_arn" {
   type = string
@@ -53,12 +57,22 @@ variable "rds_idle_rule_arn" {
   description = "ARN of idle rds rule"
 }
 
-variable "rds_zero_conn_rule" {
+variable "rds_zero_conn_rule_arn" {
   type = string
   description = "ARN of rds zero connection rule"
 }
 
-variable "s3_unused_rule" {
+variable "s3_unused_rule_arn" {
   type = string
-  description = "ARM of unused s3 rule"
+  description = "ARN of unused s3 rule"
+}
+
+variable "rds_idle_scheduler_arn" {
+  type = string
+  description = "ARN of idle rds scheduler"
+}
+
+variable "rds_zero_conn_scheduler_arn" {
+  type = string
+  description = "ARN of zero connections rds scheduler"
 }

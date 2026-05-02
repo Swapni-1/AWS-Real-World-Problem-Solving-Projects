@@ -1,4 +1,26 @@
-# 1. WS_EC2 Security Group
+# 1. ALB Security Group
+
+resource "aws_security_group" "alb_sg" {
+  name = "alb-sg"
+  vpc_id = var.vpc_id
+
+  ingress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+# 2. WS_EC2 Security Group (ALB -> EC2)
 
 resource "aws_security_group" "ws_ec2_sg" {
   name = "${var.project_name}-ws-ec2-sg"
@@ -10,7 +32,7 @@ resource "aws_security_group" "ws_ec2_sg" {
     from_port = 80
     to_port = 80
     protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.alb_sg.id]
   }
 
   # Outbound: Everything is allowed

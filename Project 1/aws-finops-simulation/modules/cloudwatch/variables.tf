@@ -4,20 +4,20 @@ variable "aws_region" {
   default = "ap-south-2"
 }
 
-variable "ec2_instances_id" {
-  description = "EC2 instance ID to monitor"
-  type = string
-}
+# variable "ec2_instances_id" {
+#   description = "EC2 instance ID to monitor"
+#   type = string
+# }
 
 variable "rds_instance_id" {
   description = "RDS instance id"
   type = string
 }
 
-variable "rds_instance_identifier" {
-  description = "RDS instance identifier"
-  type = string
-}
+# variable "rds_instance_identifier" {
+#   description = "RDS instance identifier"
+#   type = string
+# }
 
 
 variable "s3_bucket_name" {
@@ -25,18 +25,17 @@ variable "s3_bucket_name" {
   type = string
 }
 
-variable "dashboard_name" {
-  description = "Name of central dashboard"
-  type = string
-  default = "Central-Resource-Monitoring-Dashboard"
-}
-
-variable "sns_topic_arn" {
-  description = "arn of sns topic"
-  type = string
-}
+# variable "sns_topic_arn" {
+#   description = "arn of sns topic"
+#   type = string
+# }
 
 # variable "aws_lambda_function_alarm_processor_arn" {
 #   description = "ARN value of lambda function"
+#   type = string
+# }
+
+# variable "aws_iam_lambda_role_arn" {
+#   description = "ARN value of lambda iam role"
 #   type = string
 # }

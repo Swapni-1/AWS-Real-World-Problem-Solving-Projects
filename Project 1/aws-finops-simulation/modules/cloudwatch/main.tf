@@ -1,258 +1,239 @@
-resource "aws_cloudwatch_dashboard" "central_monitoring" {
-  dashboard_name = var.dashboard_name
+resource "aws_cloudwatch_dashboard" "finops-dashboard" {
+  dashboard_name = "FinOps-Dashboard"
 
   dashboard_body = jsonencode({
+    title = "FinOps Dashboard - Cost & Waste Detection"
+    
     widgets = [
-      # ---------- Row 1: EC2 ----------
+      # ===========
+      # RDS SECTION
+      # ===========
+
+      # 6. Utilization vs Capacity Gauage (FreeStorageSpace)
       {
-        type   = "metric"
-        x      = 0
-        y      = 0
-        width  = 12
-        height = 6
+        type = "metric"
         properties = {
+          title = "RDS Storage Over-Provisioning"
+          region = var.aws_region
+
           metrics = [
-            ["AWS/EC2", "CPUUtilization", "InstanceId", var.ec2_instances_id, { stat = "Average", period = 300, label = "EC2 CPU %" }]
+            ["AWS/RDS","FreeStorageSpace","DBInstanceIdentifier",var.rds_instance_id,{ stat = "Minimum" }]
           ]
-          view    = "timeSeries"
-          region  = var.aws_region
-          title   = "EC2 CPU Utilization"
-          yAxis   = { left = { min = 0, max = 100 } }
+          view = "guage"
+          yAxis = { left = { min = 0 } }
+          period = 3600
+          stat = "Minimum"
         }
-      },
-      # EC2 Idle Alarm (Single Value)
-      {
-        type   = "metric"
-        x      = 12
-        y      = 0
-        width  = 6
+        x = 12
+        y = 12
+        width = 6
         height = 6
-        properties = {
-          metrics = [
-            # AlarmState ke liye sirf 2 parameters aur config object kaafi hai
-            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.ec2_idle.alarm_name]
-          ]
-          view    = "singleValue"
-          region  = var.aws_region
-          title   = "EC2 Idle Alarm State"
-        }
-      },
-      # EC2 Overload Alarm
-      {
-        type   = "metric"
-        x      = 18
-        y      = 0
-        width  = 6
-        height = 6
-        properties = {
-          metrics = [
-            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.ec2_overload.alarm_name]
-          ]
-          view    = "singleValue"
-          region  = var.aws_region
-          title   = "EC2 Overload Alarm State"
-        }
       },
 
-      # ---------- Row 2: RDS ----------
+      # 7. Active User Tracker - DatabaseConnections (Threshold 1)
       {
-        type   = "metric"
-        x      = 0
-        y      = 6
-        width  = 6
-        height = 6
+        type = "metric"
         properties = {
+          title = "Active Database Connections"
+          region = var.aws_region
+          
           metrics = [
-            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_instance_identifier, { stat = "Average", period = 300, label = "RDS CPU %" }]
+            ["AWS/RDS","DatabaseConnections","DBInstanceIdentifier",var.rds_instance_id, { stat = "Maximum" } ]
           ]
-          view    = "timeSeries"
-          region  = var.aws_region
-          title   = "RDS CPU Utilization"
+          view = "timeSeries"
+          stacked = false
+          annotations = {
+            horizontal = [{
+              label = "Idle threshold (1 conn)"
+              value = 1
+              fill = "none"
+              color = "#d13212"
+            }]
+          }
+          period = 300
+          stat = "Maximum"
         }
-      },
-      {
-        type   = "metric"
-        x      = 6
-        y      = 6
-        width  = 6
+        x = 0
+        y = 18
+        width = 12
         height = 6
-        properties = {
-          metrics = [
-            ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", var.rds_instance_identifier, { stat = "Average", period = 300, label = "Connections" }]
-          ]
-          view    = "timeSeries"
-          region  = var.aws_region
-          title   = "RDS Database Connections"
-        }
-      },
-      # RDS Idle Alarm
-      {
-        type   = "metric"
-        x      = 12
-        y      = 6
-        width  = 6
-        height = 6
-        properties = {
-          metrics = [
-             ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.rds_idle.alarm_name]
-          ]
-          view    = "singleValue"
-          region  = var.aws_region
-          title   = "RDS Idle Alarm State"
-        }
-      },
-      # RDS Zero Connections Alarm
-      {
-        type   = "metric"
-        x      = 18
-        y      = 6
-        width  = 6
-        height = 6
-        properties = {
-          metrics = [
-            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.rds_zero_connections.alarm_name]
-          ]
-          view    = "singleValue"
-          region  = var.aws_region
-          title   = "RDS Zero Connections Alarm"
-        }
       },
 
-      # ---------- Row 3: S3 ----------
+      # 8. Compute Efficiency - CPUUtilization ( <5% )
       {
-        type   = "metric"
-        x      = 0
-        y      = 12
-        width  = 6
-        height = 6
+        type = "metric"
         properties = {
+          title = "RDS Compute Waste (CPU < 5%)"
+          region = var.aws_region
+
           metrics = [
-            [ {"expression" : "m1+m2+m3+m4", "label" : "TotalRequests", "id" : "e1"} ],
-            [ "AWS/S3", "GetRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket" , {"id" : "m1", "stat" : "Sum"}],
-            [".","PutRequests", ".", ".",".",".", {"id" : "m2", "stat" : "Sum"}],
-            [".","PostRequests", ".", ".",".",".", {"id" : "m3", "stat" : "Sum"}],
-            [".","DeleteRequests", ".", ".",".",".", {"id" : "m4", "stat" : "Sum"}]
+            ["AWS/RDS","CPUUtilization","DBInstanceIdentifier",var.rds_instance_id]
           ]
-          view    = "timeSeries"
-          stat = "Sum"
-          period = 3600
-          region  = var.aws_region
-          title   = "S3 Total Requests (GET + PUT + POST + DELETE)"
+
+          view = "timeSeries"
+          stacked = false
+          annotations = {
+            horizontal = [{
+              label = "Idle compute threshold"
+              value = 5
+              fill = "none"
+              color = "#d13212"
+            }]
+          }
+          period = 300
+          stat = "Average"
         }
-      },
-       {
-        type   = "metric"
-        x      = 6
-        y      = 12
-        width  = 6
+        x = 12
+        y = 18
+        width = 12
         height = 6
-        properties = {
-          metrics = [
-            ["AWS/S3","GetRequests","BucketName",var.s3_bucket_name,"FilterId","EntireBucket"],
-            [".","PutRequests",".",".",".","."],
-            [".","PostRequests",".",".",".","."],
-            [".","DeleteRequests",".",".",".","."]
-          ]
-          #view    = "timeSeries"
-          stat = "Sum"
-          period = 3600
-          region  = var.aws_region
-          title   = "S3 Request Breakdown"
-        }
       },
-      #  {
-      #   type   = "metric"
-      #   x      = 12
-      #   y      = 12
-      #   width  = 6
-      #   height = 6
-      #   properties = {
-      #     metrics = [
-      #       # S3 metrics dimensions (BucketName, StorageType) array mein sahi se daalein
-      #       ["AWS/S3", "PostRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { stat = "Sum", period = 300 }]
-      #     ]
-      #     view    = "timeSeries"
-      #     region  = var.aws_region
-      #     title   = "S3 Bucket Daily POST Requests"
-      #   }
-      # },
-      # {
-      #   type   = "metric"
-      #   x      = 18
-      #   y      = 12
-      #   width  = 6
-      #   height = 6
-      #   properties = {
-      #     metrics = [
-      #       # S3 metrics dimensions (BucketName, StorageType) array mein sahi se daalein
-      #       ["AWS/S3", "DeleteRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { stat = "Sum", period = 300 }]
-      #     ]
-      #     view    = "timeSeries"
-      #     region  = var.aws_region
-      #     title   = "S3 Bucket Daily DELETE Requests"
-      #   }
-      # },
-      # # S3 Unused Alarms (GET,PUT,POST,DELETE)
+
+      # 9. IOPS Activity - Stacked Area (ReadIOPS + WriteIOPS)
       {
-        type   = "metric"
-        x      = 12 #0
-        y      = 12 #18
-        width  = 6 #6
-        height = 6 #6
+        type = "metric"
         properties = {
+          title = "RDS I/O Activity - Background tasks?"
+          region = var.aws_region
           metrics = [
-            ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_no_requests.alarm_name]
+            ["AWS/RDS","ReadIOPS","DBInstanceIdentifier",var.rds_instance_id, { stat = "Sum" }],
+            ["AWS/RDS", "WriteIOPS","DBInstanceIdentifier",var.rds_instance_id, { stat = "Sum" }]
           ]
-          view    = "singleValue"
-          region  = var.aws_region
-          title   = "S3 No Activity Alarm Status"
+          view = "timeSeries"
+          stacked = true
+          yAxis = { left = { label = "IOPS" } }
+          period = 300
         }
+        x = 0
+        y = 24
+        width = 12
+        height = 6
       },
-      # {
-      #   type   = "metric"
-      #   x      = 6
-      #   y      = 18
-      #   width  = 6
-      #   height = 6
-      #   properties = {
-      #     metrics = [
-      #       ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_put_requests.alarm_name]
-      #     ]
-      #     view    = "singleValue"
-      #     region  = var.aws_region
-      #     title   = "S3 PUT Requests Bucket Alarm State"
-      #   }
-      # },
-      # {
-      #   type   = "metric"
-      #   x      = 12
-      #   y      = 18
-      #   width  = 6
-      #   height = 6
-      #   properties = {
-      #     metrics = [
-      #       ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_post_requests.alarm_name]
-      #     ]
-      #     view    = "singleValue"
-      #     region  = var.aws_region
-      #     title   = "S3 POST Requests Bucket Alarm State"
-      #   }
-      # },
-      # {
-      #   type   = "metric"
-      #   x      = 18
-      #   y      = 18
-      #   width  = 6
-      #   height = 6
-      #   properties = {
-      #     metrics = [
-      #       ["AWS/CloudWatch", "AlarmState", "AlarmName", aws_cloudwatch_metric_alarm.s3_delete_requests.alarm_name]
-      #     ]
-      #     view    = "singleValue"
-      #     region  = var.aws_region
-      #     title   = "S3 DELETE Requests Bucket Alarm State"
-      #   }
-      # }
+
+      # 10. RDS Financial Summary Text
+      {
+        type = "text"
+        properties = {
+          markdown = <<-EOT
+            ## 💵 RDS Financial Impact
+            - Stopping RDS during **non-business hours (12h/day)** reduces costs by **50%**
+            - Automation status : ✅ Stop/Start Lambda active (check alarms).
+            - Right-sizing potential: ${"`FreeStorageSpace`"} shows over-provisioning.   
+          EOT
+        }
+        x = 12
+        y = 24
+        width = 12
+        height = 3
+      },
+
+      # ==========
+      # S3 SECTION
+      # ==========
+
+      # 11. Storage Composition - Pie Chart by Storage Class
+      {
+        type = "metric"
+        properties = {
+          title = "S3 Storage Class Composition (Lifecycle success)"
+          region = var.aws_region
+
+          metrics = [
+            { expression = "SEARCH('{AWS/S3,BucketName,StorageClass} BucketSizeBytes','Average', 86400)", label = "ByClass", id = "e1", visible = false },
+            { expression = "SERVICE_QUOTA(e1,10)", label = "Standard", id = "std", stat = "Average", period = 86400 },
+            { expression = "SERVICE_QUOTA(e1,20)", label = "Glacier/DeepArchive", id = "glacier", stat = "Average", period = 86400 }
+          ]
+
+          view = "pie"
+          period = 86400
+          stat = "Average"
+        }
+        x = 0
+        y = 0
+        width = 8
+        height = 6
+      },
+
+      # 12. Ghost Bucket Detector - AllRequests (30 daily total)
+      {
+        type = "metric"
+
+        properties = {
+          title = "Ghost Bucket? (Requests last 30 days)"
+          region = var.aws_region
+
+          metrics = [
+            { expression = "SUM(SEARCH('{AWS/S3,BucketName} MetricName=\"AllRequests\"','Sum',86400))", label = "Daily total requests", id = "req", stat = "Sum", period = 86400 }
+          ]
+          view = "singleValue"
+          period = 86400
+          stat = "Sum"
+          setPeriodToTimeRange = false
+        }
+        x = 8
+        y = 30
+        width = 4
+        height = 3
+      },
+
+      # 13. Object Count Trend
+      {
+        type = "metric"
+        properties = {
+          title = "S3 Object Count Trend"
+          region = var.aws_region
+
+          metrics = [
+            ["AWS/S3","NumberOfObjects","BucketName",var.s3_bucket_name,"StorageClass","AllStorageTypes", { stat = "Average" }]
+          ]
+          view = "timeSeries"
+          stacked = false
+          period = 86400
+          stat = "Average"
+        }
+        x = 12
+        y = 30
+        width = 6
+        height = 6
+      },
+
+      # 14. Data Retrieval Analysis - Bar Chart (Get vs Put)
+      {
+        type = "metric"
+        properties = {
+          title = "GetRequests vs PutRequests (Archieve decision)"
+          region = var.aws_region
+
+          metrics = [
+            ["AWS/S3", "GetRequests", "BucketName", var.s3_bucket_name, { stat = "Sum", period = 86400, label = "GET" }],
+            ["AWS/S3", "PutRequests", "BucketName", var.s3_bucket_name, { stat = "Sum", period = 86400, label = "PUT" }],
+          ]
+
+          view = "bar"
+          stacked = false
+          period = 86400
+          stat = "Sum"
+        }
+
+        x = 18
+        y = 30
+        width = 6
+        height = 6
+      },
+
+      # 15. Cost-Saving Summary Text for S3
+      {
+        type = "metric"
+        properties = {
+          markdown = <<-EOT
+            ## 🧊 S3 Cost Savings
+            - **Standard Storage:** $0.23/GB
+            - **Glacier Deep Archive** $0.00099/GB
+            - **Savings Example:** Moving 10 GB logs to Glacier saves **-95%** monthly cost.
+            - **Expiration policy:** Delete old backups after 90 days. 
+          EOT
+        }
+      } 
     ]
   })
 }

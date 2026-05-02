@@ -8,9 +8,29 @@ variable "instance_type" {
   type = string
 }
 
-variable "public_subnet_id" {
+variable "vpc_id" {
+  type = string
+  default = "Id of VPC"
+}
+
+variable "public_subnet_ids" {
+  description = "Multiple Id of public subnet"
+  type = list(string)
+}
+
+variable "private_subnet_ids" {
+  description = "Multiple Id of private subnet"
+  type = list(string)
+}
+
+variable "private_subnet_1_id" {
   description = "ID of public subnet"
   type = string
+}
+
+variable "alb_sg_id" {
+  type = string
+  description = "Id of ALB (Application Load Balancer)"
 }
 
 variable "ws-ec2-sg-id" {

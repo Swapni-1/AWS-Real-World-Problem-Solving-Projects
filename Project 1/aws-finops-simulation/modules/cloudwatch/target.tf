@@ -4,10 +4,10 @@
 #     target_id = "EC2IdleTarget"
 # }
 
-# resource "aws_cloudwatch_event_target" "ec2_overload_target" {
-#   rule = aws_cloudwatch_event_rule.ec2_overload_rule.name
-#   arn = var.aws_lambda_function_alarm_processor_arn
-#   target_id = "EC2OverloadTarget"
+# resource "aws_cloudwatch_event_target" "ec2_start_target" {
+#   rule = aws_cloudwatch_event_rule.ec2_start_at_9am.name
+#   arn =  var.aws_lambda_function_alarm_processor_arn
+#   target_id = "EC2StartTarget"
 # }
 
 # resource "aws_cloudwatch_event_target" "rds_idle_target" {
@@ -17,7 +17,7 @@
 # }
 
 # resource "aws_cloudwatch_event_target" "rds_zero_conn_target" {
-#   rule = aws_cloudwatch_event_rule.ec2_overload_rule.name
+#   rule = aws_cloudwatch_event_rule.rds_zero_conn_rule.name
 #   arn = var.aws_lambda_function_alarm_processor_arn
 #   target_id = "RDSZeroConnTarget"
 # }

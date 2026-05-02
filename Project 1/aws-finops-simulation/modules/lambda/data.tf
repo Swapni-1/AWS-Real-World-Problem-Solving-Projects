@@ -7,3 +7,7 @@ data "archive_file" "lambda_zip" {
     filename = "index.py"
   }
 }
+
+data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
