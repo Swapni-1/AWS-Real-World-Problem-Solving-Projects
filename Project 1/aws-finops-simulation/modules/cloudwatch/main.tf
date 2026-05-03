@@ -150,15 +150,9 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             ["AWS/RDS","FreeStorageSpace","DBInstanceIdentifier",var.rds_instance_identifier,{ stat = "Minimum", label = "FreeStorageBytes" }]
           ]
           view = "gauge"
-          yAxis = { left = { min = 0, max = 21474836480 } }
+          yAxis = { left = { min = 0, max = 100 } }
           period = 3600
-          annotations = {
-            horizontal = [{
-              label = "Low Storage Warning"
-              value = 5368709120
-              color = "#ff0000"
-            }]
-          }
+          annotations = {}
         }
         x = 0
         y = 12
@@ -299,15 +293,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             }
           }
 
-          annotations = {
-            horizontal = [
-              {
-                label = "Move to Glacier Threshold"
-                value = 10737418240 # 10GB in bytes (Example point for lifecycle policy)
-                color = "#ff9900"
-              }
-            ]
-          }
+          annotations = {}
         }
         x = 0
         y = 24
@@ -366,15 +352,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             }
           }
 
-          annotations = {
-            horizontal = [
-              {
-                label = "Cleanup Target"
-                value = 100000 # Example: Agar 1 lakh se upar files jayein toh cleanup zaroori hai
-                color = "#d62728"
-              }
-            ]
-          }
+          annotations = {}
         }
         x = 0
         y = 30
@@ -404,15 +382,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             }
           }
 
-          annotations = {
-            horizontal = [
-              {
-                label = "Low Activity Zone"
-                value = 10 # Agar 24 ghante mein 10 se kam GET hain, toh archive karein
-                color = "#9467bd"
-              }
-            ]
-          }
+          annotations = {}
         }
 
         x = 8

@@ -1,37 +1,73 @@
-# resource "aws_scheduler_schedule" "rds_schedule" {
-#   name = "rds-idle-check-10min"
+# This module creates an IAM role and policy for the RDS start/stop scheduler.
+resource "aws_iam_role" "rds_scheduler_role" {
+  name = "rds-start-stop-scheduler-role"
 
-#   schedule_expression = "rate(10 minutes)"
+  assume_role_policy = jsonencode({ 
+    Version = "2012-10-17"
+    Statement = [{ 
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "scheduler.amazonaws.com"
+      }
+    }]
+  })
+  
+}
 
-#   flexible_time_window {
-#     mode = "OFF"
-#   }
+resource "aws_iam_role_policy" "rds_scheduler_policy" {
+  name = "rds-scheduler-policy"
+  role = aws_iam_role.rds_scheduler_role.id
 
-#   target {
-#     arn = var.aws_lambda_function_alarm_processor_arn
-#     role_arn = var.aws_iam_lambda_role_arn
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+            "rds:StartDBInstance",
+            "rds:StopDBInstance"
+        ]
+        Resource = "arn:aws:rds:${var.aws_region}:${data.aws_caller_identity.current.account_id}:db:${var.rds_instance_identifier}"
+      }
+    ]
+  })
+}
 
-#     input = jsonencode({
-#         action = "rds-idle"
-#     }) 
-#   }
-# }
+# Create a scheduler to start RDS instance at 8:45 AM ITC daily
+resource "aws_scheduler_schedule" "rds_start_daily" {
+  name = "start-rds-daily-8-45-am-ist"
+  group_name = "default"
+  description = "Start RDS instance at 8:45 AM IST daily"
+  schedule_expression = "cron(45 8 * * ? *)"
+  schedule_expression_timezone = "Asia/Kolkata"
+  flexible_time_window {
+    mode = "OFF"
+  }
+  target {
+    arn = "arn:aws:scheduler:::aws-sdk:rds:startDBInstance"
+    role_arn = aws_iam_role.rds_scheduler_role.arn
+    input = jsonencode({
+      DbInstanceIdentifier = var.rds_instance_identifier
+    })
+  }
+}
 
-# resource "aws_scheduler_schedule" "rds_zero_conn_scheduler" {
-#   name = "rds-zero-connections-check-60min"
-
-#   schedule_expression = "rate(60 minutes)"
-
-#   flexible_time_window {
-#     mode = "OFF"
-#   }
-
-#   target {
-#     arn = var.aws_lambda_function_alarm_processor_arn
-#     role_arn = var.aws_iam_lambda_role_arn
-
-#     input = jsonencode({
-#         action = "rds-zero-connections"
-#     }) 
-#   }
-# }
+# Create a scheduler to stop RDS instance at 9:00 PM ITC daily
+resource "aws_scheduler_schedule" "rds_stop_daily" {
+  name = "stop-rds-daily-9-00-pm-ist"
+  group_name = "default"
+  description = "Stop RDS instance at 9:00 PM IST daily"
+  schedule_expression = "cron(0 21 * * ? *)"
+  schedule_expression_timezone = "Asia/Kolkata"
+  flexible_time_window {
+    mode = "OFF"
+  }
+  target {
+    arn = "arn:aws:scheduler:::aws-sdk:rds:stopDBInstance"
+    role_arn = aws_iam_role.rds_scheduler_role.arn
+    input = jsonencode({
+      DbInstanceIdentifier = var.rds_instance_identifier
+    })
+  }
+}   
