@@ -28,6 +28,11 @@ resource "aws_s3_bucket" "my_bucket" {
   }
 }
 
+resource "aws_s3_bucket_metric" "entire_bucket" {
+  bucket = aws_s3_bucket.my_bucket.bucket
+  name = "EntireBucket"
+}
+
 #1 IAM Role
 resource "aws_iam_role" "ec2_s3_access_role" {
   name = "ec2_s3_access_role"

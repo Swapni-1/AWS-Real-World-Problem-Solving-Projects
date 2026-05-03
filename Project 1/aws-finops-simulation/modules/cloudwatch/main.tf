@@ -147,12 +147,18 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           region = var.aws_region
 
           metrics = [
-            ["AWS/RDS","FreeStorageSpace","DBInstanceIdentifier",var.rds_instance_identifier,{ stat = "Minimum" }]
+            ["AWS/RDS","FreeStorageSpace","DBInstanceIdentifier",var.rds_instance_identifier,{ stat = "Minimum", label = "FreeStorageBytes" }]
           ]
           view = "gauge"
-          yAxis = { left = { min = 0, max = 100 } }
+          yAxis = { left = { min = 0, max = 21474836480 } }
           period = 3600
-          annotations = {}
+          annotations = {
+            horizontal = [{
+              label = "Low Storage Warning"
+              value = 5368709120
+              color = "#ff0000"
+            }]
+          }
         }
         x = 0
         y = 12
@@ -222,13 +228,29 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           title = "RDS I/O Activity (ReadIOPS + WriteIOPS)"
           region = var.aws_region
           metrics = [
-            ["AWS/RDS","ReadIOPS","DBInstanceIdentifier",var.rds_instance_identifier, { stat = "Sum" }],
-            ["AWS/RDS", "WriteIOPS","DBInstanceIdentifier",var.rds_instance_identifier, { stat = "Sum" }]
+            ["AWS/RDS","ReadIOPS","DBInstanceIdentifier",var.rds_instance_identifier, { stat = "Sum", color = "#0073bb", label = "Read IOPS" }],
+            ["AWS/RDS", "WriteIOPS","DBInstanceIdentifier",var.rds_instance_identifier, { stat = "Sum", color = "#d63aff", label = "Write IOPS" }]
           ]
           view = "timeSeries"
           stacked = true
           period = 300
-          annotations = {}
+
+          yAxis = {
+            left = {
+              label = "Operations/Second"
+              min   = 0
+            }
+          }
+
+          annotations = {
+            horizontal = [
+              {
+                label = "I/O Peak Baseline"
+                value = 100 # Example baseline, ise apne DB capacity ke hisaab se set karein
+                color = "#ffa500"
+              }
+            ]
+          }
         }
         x = 8
         y = 18
@@ -265,12 +287,27 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           region = var.aws_region
 
           metrics = [
-           ["AWS/S3","BucketSizeBytes","BucketName",var.s3_bucket_name,"StorageClass","Standard", { stat = "Average", period = 86400 }]
+           ["AWS/S3","BucketSizeBytes","BucketName",var.s3_bucket_name,"StorageClass","Standard", { stat = "Average", period = 86400, label = "Standard Storage (Bytes)" }]
           ]
           view = "timeSeries"
           period = 86400
           stacked = false
-          annotations = {}
+
+          yAxis = {
+            left = {
+              min = 0
+            }
+          }
+
+          annotations = {
+            horizontal = [
+              {
+                label = "Move to Glacier Threshold"
+                value = 10737418240 # 10GB in bytes (Example point for lifecycle policy)
+                color = "#ff9900"
+              }
+            ]
+          }
         }
         x = 0
         y = 24
@@ -291,7 +328,15 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           ]
           view = "singleValue"
           period = 86400
-          annotations = {}
+
+          sparkline = true
+          annotations = {
+            horizontal = [{
+              label = "Idle Threshold"
+              value = 0
+              color = "#ff0000"
+            }]
+          }
         }
         x = 12
         y = 24
@@ -307,11 +352,29 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           region = var.aws_region
 
           metrics = [
-            ["AWS/S3","NumberOfObjects","BucketName",var.s3_bucket_name,"StorageClass","AllStorageTypes", { stat = "Average" }]
+            ["AWS/S3","NumberOfObjects","BucketName",var.s3_bucket_name,"StorageClass","AllStorageTypes", { stat = "Average", label = "Total Objects", color = "#2ca02c" }]
           ]
           view = "timeSeries"
           period = 86400
-          annotations = {}
+
+          sparkline = true
+
+          yAxis = {
+            left = {
+              label = "Count"
+              min   = 0
+            }
+          }
+
+          annotations = {
+            horizontal = [
+              {
+                label = "Cleanup Target"
+                value = 100000 # Example: Agar 1 lakh se upar files jayein toh cleanup zaroori hai
+                color = "#d62728"
+              }
+            ]
+          }
         }
         x = 0
         y = 30
@@ -327,13 +390,29 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           region = var.aws_region
 
           metrics = [
-            ["AWS/S3", "GetRequests", "BucketName", var.s3_bucket_name, { stat = "Sum", period = 86400, label = "GET" }],
-            ["AWS/S3", "PutRequests", "BucketName", var.s3_bucket_name, { stat = "Sum", period = 86400, label = "PUT" }],
+            ["AWS/S3", "GetRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { "stat": "Sum", "period": 86400, "label": "GET (Reads)", "color": "#1f77b4" }],
+            ["AWS/S3", "PutRequests", "BucketName", var.s3_bucket_name, "FilterId", "EntireBucket", { "stat": "Sum", "period": 86400, "label": "PUT (Writes)", "color": "#ff7f0e" }]
           ]
 
           view = "bar"
           period = 86400
-          annotations = {}
+
+          yAxis = {
+            left = {
+              label = "Total Request Count"
+              min   = 0
+            }
+          }
+
+          annotations = {
+            horizontal = [
+              {
+                label = "Low Activity Zone"
+                value = 10 # Agar 24 ghante mein 10 se kam GET hain, toh archive karein
+                color = "#9467bd"
+              }
+            ]
+          }
         }
 
         x = 8
