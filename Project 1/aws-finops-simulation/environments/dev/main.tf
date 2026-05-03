@@ -31,11 +31,23 @@ module "my_rds" {
 }
 
 module "my_cloudwatch" {
-  source                  = "../../modules/cloudwatch"
+  source                                = "../../modules/cloudwatch"
+  asg_name                              = module.auto_scaling_group.asg_name
+  rds_instance_identifier               = module.my_rds.db_instance_identifier
+  s3_bucket_name                        = module.my_s3_bucket.bucket_name
+  sns_topic_arn                         = module.my_sns.sns_topic_arn
+  aws_iam_lambda_role_arn               = module.finops_lambda.aws_iam_lambda_role_arn
+  aws_lambda_function_rds_optimizer_arn = module.finops_lambda.aws_lambda_function_rds_optimizer_arn
+  aws_lambda_function_s3_optimizer_arn  = module.finops_lambda.aws_lambda_function_s3_optimizer_arn
+}
+
+module "finops_lambda" {
   asg_name                = module.auto_scaling_group.asg_name
   rds_instance_identifier = module.my_rds.db_instance_identifier
   s3_bucket_name          = module.my_s3_bucket.bucket_name
-  sns_topic_arn           = module.my_sns.sns_topic_arn
+  rds_idle_rule_arn       = module.my_cloudwatch.rds_idle_rule_arn
+  s3_unused_rule_arn      = module.my_cloudwatch.s3_unused_rule_arn
+  source                  = "../../modules/lambda"
 }
 
 module "my_sns" {

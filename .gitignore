@@ -21,3 +21,6 @@
 
 # MacOS specific files
 .DS_Store
+
+# quodo files
+**/.qodo

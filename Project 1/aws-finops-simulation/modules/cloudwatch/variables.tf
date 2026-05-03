@@ -26,12 +26,17 @@ variable "sns_topic_arn" {
   type = string
 }
 
-# variable "aws_lambda_function_alarm_processor_arn" {
-#   description = "ARN value of lambda function"
-#   type = string
-# }
+variable "aws_lambda_function_rds_optimizer_arn" {
+  description = "ARN value of lambda function"
+  type = string
+}
 
-# variable "aws_iam_lambda_role_arn" {
-#   description = "ARN value of lambda iam role"
-#   type = string
-# }
+variable "aws_lambda_function_s3_optimizer_arn" {
+  description = "ARN value of lambda function"
+  type = string
+}
+
+variable "aws_iam_lambda_role_arn" {
+  description = "ARN value of lambda iam role"
+  type = string
+}

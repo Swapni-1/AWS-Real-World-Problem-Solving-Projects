@@ -1,13 +1,8 @@
 data "archive_file" "lambda_zip" {
   type = "zip"
-  output_path = "${path.module}/functions/${var.file_name}"
+  output_path = "${path.module}/functions/lambda_package.zip"
 
-  source {
-    content = file("${path.module}/functions/index.py")
-    filename = "index.py"
-  }
+  source_dir = "${path.module}/functions/"
 }
-
-data "aws_region" "current" {}
 
 data "aws_caller_identity" "current" {}
