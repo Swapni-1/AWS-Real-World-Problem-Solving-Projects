@@ -92,8 +92,8 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 resource "aws_vpc_endpoint" "s3_gateway" {
   vpc_id = var.vpc_id
   service_name = "com.amazonaws.${var.aws_region}.s3"
-
-  route_table_ids = [var.route_table_id]
+  vpc_endpoint_type = "Gateway"
+  route_table_ids = [var.public_route_table_id, var.private_route_table_id]
 
   tags = {
     Name = "s3-gateway-endpoint"

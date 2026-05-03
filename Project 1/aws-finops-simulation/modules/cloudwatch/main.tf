@@ -9,14 +9,14 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
       # EC2 SECTION
       # ===========
 
-      # 1. Waste Detector 
+      #1. Waste Detector 
       {
         type = "metric"
         properties = {
           title = "ASG Waste Detector (Avg CPU < 5%)"
           region = var.aws_region
 
-          metric = [
+          metrics = [
             ["AWS/EC2","CPUUtilization","AutoScalingGroupName",var.asg_name, { stat = "Average" }]
           ]
 
@@ -43,29 +43,103 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
 
       # 2. Traffic and Compute Correlation
       {
+        type = "metric"
+        properties = {
+          title = "ASG Traffic & Compute Correlation"
+          region = var.aws_region
 
+          metrics = [
+            ["AWS/EC2","NetworkIn","AutoScalingGroupName", var.asg_name, {stat = "Average", yAxis = "right"}],
+            ["AWS/EC2","CPUUtilization","AutoScalingGroupName", var.asg_name, {stat = "Average", yAxis = "left"}]
+          ]
+
+          view = "timeSeries"
+          stacked = true
+          yAxis = {
+            left = { label = "CPU %", min = 0, max = 100}
+            right = { label = "Network In (Bytes)"}
+          }
+          period = 300
+        }
+        x = 12
+        y = 0 
+        width = 12
+        height = 6
       },
 
       # 3. Spike Handler - Max CPU and Instance Count
       {
+        type = "metric"
+        properties = {
+          title = "ASG Scale-Out Monitoring (Spikes)"
+          region = var.aws_region
 
+          metrics = [
+            ["AWS/EC2","CPUUtilization","AutoScalingGroupName", var.asg_name, { stat = "Maximum", period = 300, label = "Max CPU (5 min)"}],
+            ["AWS/AutoScaling","GroupInServiceInstance","AutoScalingGroupName", var.asg_name, { stat = "Maximum", label = "Active Instances", yAxis = "right"}]
+          ]
+
+          view = "timeSeries"
+          stacked = false
+          yAxis = {
+            left = { label = "CPU %", min = 0, max = 100 }
+            right = { label = "Instance Count" }
+          }
+          period = 300
+        }
+        x = 0
+        y = 6
+        width = 8
+        height = 6
       },
 
       # 4. Cost-Saving Timer 
       {
-
+        type = "text"
+        properties = {
+          markdown = <<-EOT
+            ## FinOps Timer
+            **Scheduled Scaling: 9 AM - 9 PM IST**
+            **Raat ko instances stop karne se cost 50% kam hoti hai.**
+          EOT
+        }
+        x = 8
+        y = 6
+        width = 8
+        height = 6
       },
 
       # 5. Credit Balance (Aggregate for ASG)
       {
+        type = "metric"
+        properties = {
+          title = "ASG CPU Credit Balance (Remaining)"
+          region = var.aws_region
+          
+          metrics = [
+            ["AWS/EC2", "NetworkIn", "AutoScalingGroupName", var.asg_name, { stat = "Average", yAxis = "right" }],
+            ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", var.asg_name, { stat = "Average", yAxis = "left" }],
+          ]
 
+          view = "timeSeries"
+          stacked = true
+          yAxis = {
+            left = { label = "CPU %", min = 0, max = 100 }
+            right = { label = "Network In (Bytes)" }
+          }
+          period = 300  
+        }
+        x = 16
+        y = 6
+        width = 8
+        height = 6
       },
 
       # ===========
       # RDS SECTION
       # ===========
 
-      # 6. Utilization vs Capacity Gauage (FreeStorageSpace)
+      # # 6. Utilization vs Capacity Gauage (FreeStorageSpace)
       {
         type = "metric"
         properties = {
@@ -80,9 +154,9 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           period = 3600
           annotations = {}
         }
-        x = 12
+        x = 0
         y = 12
-        width = 6
+        width = 12
         height = 6
       },
 
@@ -107,8 +181,8 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           }
           period = 300
         }
-        x = 0
-        y = 18
+        x = 12
+        y = 12
         width = 12
         height = 6
       },
@@ -135,9 +209,9 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           }
           period = 300
         }
-        x = 12
+        x = 0
         y = 18
-        width = 12
+        width = 8
         height = 6
       },
 
@@ -156,9 +230,9 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           period = 300
           annotations = {}
         }
-        x = 0
-        y = 24
-        width = 12
+        x = 8
+        y = 18
+        width = 8
         height = 6
       },
 
@@ -173,10 +247,10 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             - Right-sizing potential: ${"`FreeStorageSpace`"} shows over-provisioning.   
           EOT
         }
-        x = 12
-        y = 24
-        width = 12
-        height = 3
+        x = 16
+        y = 18
+        width = 8
+        height = 6
       },
 
       # ==========
@@ -199,8 +273,8 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           annotations = {}
         }
         x = 0
-        y = 0
-        width = 8
+        y = 24
+        width = 12
         height = 6
       },
 
@@ -219,10 +293,10 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           period = 86400
           annotations = {}
         }
-        x = 8
-        y = 30
-        width = 4
-        height = 3
+        x = 12
+        y = 24
+        width = 12
+        height = 6
       },
 
       # 13. Object Count Trend
@@ -239,9 +313,9 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           period = 86400
           annotations = {}
         }
-        x = 12
+        x = 0
         y = 30
-        width = 6
+        width = 8
         height = 6
       },
 
@@ -262,9 +336,9 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           annotations = {}
         }
 
-        x = 18
+        x = 8
         y = 30
-        width = 6
+        width = 8
         height = 6
       },
 
@@ -280,10 +354,10 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             - **Expiration policy:** Delete old backups after 90 days. 
           EOT
         }
-        x = 0
-        y = 36
-        width = 24
-        height = 3
+        x = 16
+        y = 30
+        width = 8
+        height = 6
       } 
     ]
   })

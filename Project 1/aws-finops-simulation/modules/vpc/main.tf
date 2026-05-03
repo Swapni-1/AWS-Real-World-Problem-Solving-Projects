@@ -1,5 +1,9 @@
+# ===========|VPC|===============
+# ===============================
 resource "aws_vpc" "my_vpc" {
   cidr_block = var.vpc_cidr
+  enable_dns_hostnames = true 
+  enable_dns_support = true 
 
   tags = {
     Name = "finops-vpc"
@@ -7,7 +11,10 @@ resource "aws_vpc" "my_vpc" {
     Layer = "network"
   }
 }
+# ===============================
 
+# ============|Pubic Subnets|==============
+# =========================================
 resource "aws_subnet" "public_subnet_1" {
   vpc_id = aws_vpc.my_vpc.id
   cidr_block = var.public_subnet_1_cidr
@@ -36,7 +43,10 @@ resource "aws_subnet" "public_subnet_2" {
     Access = "internet-facing"
   }
 }
+# =========================================
 
+# ============|Pubic Subnets|==============
+# =========================================
 resource "aws_subnet" "private_subnet_1" {
   vpc_id = aws_vpc.my_vpc.id
   cidr_block = var.private_subnet_1_cidr
@@ -64,8 +74,10 @@ resource "aws_subnet" "private_subnet_2" {
     Access = "internal"  
   }
 }
+# =========================================
 
-
+# ============|Internet Gateway|============
+# ===========================================
 resource "aws_internet_gateway" "igw" {
    vpc_id = aws_vpc.my_vpc.id
 
@@ -74,8 +86,11 @@ resource "aws_internet_gateway" "igw" {
      Purpose = "internet-access"
    }
 }
+# =============================================
 
-resource "aws_route_table" "rt" {
+# ============| Public Route Table |============ 
+# ==============================================
+resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.my_vpc.id
   
   route {
@@ -88,13 +103,42 @@ resource "aws_route_table" "rt" {
     Purpose = "routing"
   }
 }
+# ===============================================
 
-resource "aws_route_table_association" "rta_1" {
+# =======| Public Route Table Associations |=============
+# =======================================================
+resource "aws_route_table_association" "public_rta_1" {
   subnet_id = aws_subnet.public_subnet_1.id
-  route_table_id = aws_route_table.rt.id
+  route_table_id = aws_route_table.public_rt.id
 }
 
-resource "aws_route_table_association" "rta_2" {
+resource "aws_route_table_association" "public_rta_2" {
   subnet_id = aws_subnet.public_subnet_2.id
-  route_table_id = aws_route_table.rt.id
+  route_table_id = aws_route_table.public_rt.id
 }
+# =======================================================
+
+# ===========|Private Route Table|===============
+# ===============================================
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  tags = {
+    Name = "private-rt"
+  }
+}
+# ==============================================
+
+# ==========| Private Route Table Association |==========
+# ========================================================
+resource "aws_route_table_association" "private_rta_1" {
+  subnet_id = aws_subnet.private_subnet_1.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_route_table_association" "private_rta_2" {
+  subnet_id = aws_subnet.private_subnet_2.id
+  route_table_id = aws_route_table.private_rt.id
+}
+# ========================================================
+

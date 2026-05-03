@@ -1,6 +1,9 @@
-output "ec2_outputs" {
-  value = {
-    web_server_id = aws_instance.web_server.id
-    web_server_public_ip = aws_instance.web_server.public_ip
-  }
+output "asg_name" {
+  description = "Name of the Auto Scaling Group"
+  value = aws_autoscaling_group.asg.name
+}
+
+output "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer"
+  value = aws_lb.alb.dns_name
 }

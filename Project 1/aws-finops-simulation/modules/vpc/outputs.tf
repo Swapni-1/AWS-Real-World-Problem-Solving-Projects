@@ -1,11 +1,31 @@
-output "vpc_outputs" {
-  value = {
-    vpc_id = aws_vpc.my_vpc.id
-    public_subnet_1_id = aws_subnet.public_subnet_1.id
-    public_subnet_2_id = aws_subnet.public_subnet_2.id
-    private_subnet_1_id = aws_subnet.private_subnet_1.id
-    private_subnet_2_id = aws_subnet.private_subnet_2.id
-    internet_gateway_id = aws_internet_gateway.igw.id
-    route_table_id = aws_route_table.rt.id
-  }
+output "vpc_id" {
+  value = aws_vpc.my_vpc.id
+}
+
+output "public_subnet_1_id" {
+  value = aws_subnet.public_subnet_1.id
+}
+
+output "public_subnet_2_id" {
+  value = aws_subnet.public_subnet_2.id
+}
+
+output "private_subnet_1_id" {
+  value = aws_subnet.private_subnet_1.id
+}
+
+output "private_subnet_2_id" {
+  value = aws_subnet.private_subnet_2.id
+}
+
+output "internet_gateway_id" {
+  value = aws_internet_gateway.igw.id
+}
+
+output "public_route_table_id" {
+  value = aws_route_table.public_rt.id  
+}
+
+output "private_route_table_id" {
+  value = aws_route_table.private_rt.id  
 }

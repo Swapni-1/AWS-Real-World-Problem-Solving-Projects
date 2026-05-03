@@ -1,8 +1,15 @@
-output "rds_outputs" {
-  value = {
-    db_instance_id = aws_db_instance.web_server-db.id
-    db_instance_identifier = aws_db_instance.web_server-db.identifier
-    db_endpoint = aws_db_instance.web_server-db.endpoint
-    db_port = aws_db_instance.web_server-db.port
-  }
+output "db_instance_id" {
+  value = aws_db_instance.web_server-db.id
+}
+
+output "db_instance_identifier" {
+  value = aws_db_instance.web_server-db.identifier
+}
+
+output "db_endpoint" {
+  value = aws_db_instance.web_server-db.endpoint
+}
+
+output "db_port" {
+  value = aws_db_instance.web_server-db.port
 }

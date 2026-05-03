@@ -1,6 +1,12 @@
-output "security_group_outputs" {
-  value = {
-    ws_sg_id = aws_security_group.ws_ec2_sg.id
-    rds_sg_id = aws_security_group.rds_sg.id
-  }
+output "asg_sg_id" {
+  value = aws_security_group.asg_sg.id
 }
+
+output "rds_sg_id" {
+  value = aws_security_group.rds_sg.id
+}
+
+output "alb_sg_id" {
+  value = aws_security_group.alb_sg.id
+}
+

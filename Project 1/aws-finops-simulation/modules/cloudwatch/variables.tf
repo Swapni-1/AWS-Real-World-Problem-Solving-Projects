@@ -25,10 +25,10 @@ variable "s3_bucket_name" {
   type = string
 }
 
-# variable "sns_topic_arn" {
-#   description = "arn of sns topic"
-#   type = string
-# }
+variable "sns_topic_arn" {
+  description = "arn of sns topic"
+  type = string
+}
 
 # variable "aws_lambda_function_alarm_processor_arn" {
 #   description = "ARN value of lambda function"

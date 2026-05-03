@@ -10,7 +10,7 @@ variable "instance_type" {
 
 variable "vpc_id" {
   type = string
-  default = "Id of VPC"
+  description = "Id of VPC"
 }
 
 variable "public_subnet_ids" {
@@ -23,17 +23,17 @@ variable "private_subnet_ids" {
   type = list(string)
 }
 
-variable "private_subnet_1_id" {
-  description = "ID of public subnet"
-  type = string
-}
+# variable "private_subnet_1_id" {
+#   description = "ID of public subnet"
+#   type = string
+# }
 
 variable "alb_sg_id" {
   type = string
-  description = "Id of ALB (Application Load Balancer)"
+  description = "Id of ALB Security Group"
 }
 
-variable "ws-ec2-sg-id" {
+variable "asg_sg_id" {
   description = "ID of web server ec2 security group"
   type = string
 }

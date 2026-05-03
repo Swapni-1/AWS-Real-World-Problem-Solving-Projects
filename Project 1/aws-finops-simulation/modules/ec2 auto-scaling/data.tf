@@ -1,6 +1,6 @@
 data "cloudinit_config" "combined_scripts" {
   gzip = false
-  base64_encode = false
+  base64_encode = true
 
   # Script 1 : Web Server Setup (With Variables)
   part {

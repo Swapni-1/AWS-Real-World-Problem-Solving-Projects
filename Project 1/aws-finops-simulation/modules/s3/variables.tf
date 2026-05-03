@@ -5,15 +5,20 @@ variable "bucket_name" {
 
 variable "vpc_id" {
   type = string
-  default = "ID of VPC"
+  description = "ID of VPC"
 }
 
 variable "aws_region" {
   type = string
-  default = "value of current region"
+  default = "ap-south-2"
 }
 
-variable "route_table_id" {
+variable "public_route_table_id" {
   type = string
-  default = "Id of route table"
+  description = "Id of public route table"
+}
+
+variable "private_route_table_id" {
+  type = string
+  description = "Id of private route table"
 }

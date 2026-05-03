@@ -1,8 +1,11 @@
+output "ec2_instance_profile_name" {
+  value = aws_iam_instance_profile.ec2_profile.name
+}
 
-output "s3_outputs" {
-  value = {
-    ec2_instance_profile_name = aws_iam_instance_profile.ec2_profile.name
-    bucket_name = aws_s3_bucket.my_bucket.bucket
-    bucket_arn = aws_s3_bucket.my_bucket.arn
-  }
+output "bucket_name" {
+  value = aws_s3_bucket.my_bucket.bucket
+}
+
+output "bucket_arn" {
+  value = aws_s3_bucket.my_bucket.arn
 }

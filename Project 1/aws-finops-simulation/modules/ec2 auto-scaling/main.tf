@@ -10,10 +10,23 @@ resource "aws_launch_template" "lt" {
 
   network_interfaces {
     associate_public_ip_address = false
-    security_groups = [var.ws-ec2-sg-id]
+    security_groups = [var.asg_sg_id]
   }
 
   user_data = data.cloudinit_config.combined_scripts.rendered
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  instance_market_options {
+    market_type = "spot"
+  }
+
+  metadata_options {
+    http_tokens = "required"
+    http_put_response_hop_limit = 1
+  }
 }
 
 # Load Balancer Target Group
@@ -24,16 +37,25 @@ resource "aws_lb_target_group" "tg" {
   vpc_id = var.vpc_id
 
   health_check {
+    enabled = true
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    timeout = 5
+    interval = 30
     path = "/"
+    port = "traffic-port"
   }
 }
 
 # ALB (Application Load Balancer)
 resource "aws_lb" "alb" {
   name = "web-alb"
+  internal = false
   load_balancer_type = "application"
   security_groups = [var.alb_sg_id]
   subnets = var.public_subnet_ids 
+
+  enable_deletion_protection = false
 }
 
 # Listener
@@ -58,32 +80,61 @@ resource "aws_autoscaling_group" "asg" {
 
   launch_template {
     id = aws_launch_template.lt.id
-    version = aws_launch_template.lt.latest_version
+    version = "$Latest"
   }
 
   target_group_arns = [aws_lb_target_group.tg.arn]
   health_check_type = "ELB"
   health_check_grace_period = 300
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes = [desired_capacity]
+  }
+
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+    }
+  }
 }
 
 # Scaling Policies
-
-# Scale OUT (+1)
-resource "aws_autoscaling_policy" "scale_out" {
-  name = "scale-out"
-  scaling_adjustment = 1
-  adjustment_type = "ChangeInCapacity"
+resource "aws_autoscaling_policy" "cpu_tracking" {
+  name = "cpu-target-tracking"
   autoscaling_group_name = aws_autoscaling_group.asg.name
-  cooldown = 300
+  policy_type = "TargetTrackingScaling"
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 60
+  }
 }
 
-# Scale IN (-1)
-resource "aws_autoscaling_policy" "scale_in" {
-  name = "scale-in"
-  scaling_adjustment = -1
-  adjustment_type = "ChangeInCapacity"
+# Auto Scaling Schedule
+resource "aws_autoscaling_schedule" "stop_night" {
+  scheduled_action_name = "stop-asg-night"
   autoscaling_group_name = aws_autoscaling_group.asg.name
-  cooldown = 300
+  recurrence = "0 15 * * *" 
+  min_size = 0
+  max_size = 0
+  desired_capacity = 0
+
+  start_time = timeadd(formatdate("YYYY-MM-DD'T'15:30:00Z",timestamp()),"24h")
+}
+
+resource "aws_autoscaling_schedule" "start_morning" {
+  scheduled_action_name = "start-asg-morning"
+  autoscaling_group_name = aws_autoscaling_group.asg.name
+  recurrence = "0 3 * * *"
+  min_size = 1
+  max_size = 3
+  desired_capacity = 1
+
+  start_time = timeadd(formatdate("YYYY-MM-DD'T'03:30:00Z",timestamp()),"24h")
 }
 
 # # Web Server
