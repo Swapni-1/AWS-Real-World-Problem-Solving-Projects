@@ -147,7 +147,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           region = var.aws_region
 
           metrics = [
-            ["AWS/RDS","FreeStorageSpace","DBInstanceIdentifier",var.rds_instance_id,{ stat = "Minimum" }]
+            ["AWS/RDS","FreeStorageSpace","DBInstanceIdentifier",var.rds_instance_identifier,{ stat = "Minimum" }]
           ]
           view = "gauge"
           yAxis = { left = { min = 0, max = 100 } }
@@ -168,7 +168,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           region = var.aws_region
           
           metrics = [
-            ["AWS/RDS","DatabaseConnections","DBInstanceIdentifier",var.rds_instance_id, { stat = "Maximum" } ]
+            ["AWS/RDS","DatabaseConnections","DBInstanceIdentifier",var.rds_instance_identifier, { stat = "Maximum" } ]
           ]
           view = "timeSeries"
           annotations = {
@@ -195,7 +195,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           region = var.aws_region
 
           metrics = [
-            ["AWS/RDS","CPUUtilization","DBInstanceIdentifier",var.rds_instance_id]
+            ["AWS/RDS","CPUUtilization","DBInstanceIdentifier",var.rds_instance_identifier]
           ]
 
           view = "timeSeries"
@@ -222,8 +222,8 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
           title = "RDS I/O Activity (ReadIOPS + WriteIOPS)"
           region = var.aws_region
           metrics = [
-            ["AWS/RDS","ReadIOPS","DBInstanceIdentifier",var.rds_instance_id, { stat = "Sum" }],
-            ["AWS/RDS", "WriteIOPS","DBInstanceIdentifier",var.rds_instance_id, { stat = "Sum" }]
+            ["AWS/RDS","ReadIOPS","DBInstanceIdentifier",var.rds_instance_identifier, { stat = "Sum" }],
+            ["AWS/RDS", "WriteIOPS","DBInstanceIdentifier",var.rds_instance_identifier, { stat = "Sum" }]
           ]
           view = "timeSeries"
           stacked = true
