@@ -301,20 +301,32 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
         height = 6
       },
 
-      # 12. Ghost Bucket Detector - AllRequests (30 daily total)
+      # 12. Ghost Bucket Detector - (GET,PUT,LIST Request) (30 daily total)
       {
         type = "metric"
-
+      
         properties = {
-          title = "Ghost Bucket Detector - AllRequests"
+          title  = "Ghost Bucket Detector - Active Requests (Get + Put + List)"
           region = var.aws_region
-
+      
           metrics = [
-            ["AWS/S3","AllRequests", "BucketName", var.s3_bucket_name,{ stat = "Sum", period = 86400 }]
+            ["AWS/S3", "GetRequests",  "BucketName", var.s3_bucket_name, { id = "m1", stat = "Sum", period = 86400, visible = false }],
+            ["AWS/S3", "PutRequests",  "BucketName", var.s3_bucket_name, { id = "m2", stat = "Sum", period = 86400, visible = false }],
+            ["AWS/S3", "ListRequests", "BucketName", var.s3_bucket_name, { id = "m3", stat = "Sum", period = 86400, visible = false }],
+      
+            // Math Expression: Sum of the three core requests
+            [{ 
+              expression = "m1 + m2 + m3", 
+              label      = "Active Requests (Get+Put+List)", 
+              id         = "e1",
+              stat       = "Sum",
+              period     = 86400
+            }]
           ]
-          view = "singleValue"
+      
+          view = "timeSeries"
           period = 86400
-
+      
           sparkline = true
           annotations = {
             horizontal = [{
@@ -324,6 +336,7 @@ resource "aws_cloudwatch_dashboard" "finops_dashboard" {
             }]
           }
         }
+      
         x = 12
         y = 24
         width = 12

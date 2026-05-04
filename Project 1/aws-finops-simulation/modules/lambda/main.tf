@@ -147,6 +147,7 @@ resource "aws_lambda_function" "rds_optimizer" {
   environment {
     variables = {
       RDS_INSTANCE_ID = var.rds_instance_identifier
+      SNS_TOPIC_ARN = var.sns_topic_arn
     }
   }
 }
@@ -177,11 +178,19 @@ resource "aws_lambda_permission" "allow_eventbridge_rds" {
   source_arn = var.rds_idle_rule_arn
 }
 
-# Lambda Permission for EventBridge to invoke Lambda for S3 Optimizer
-resource "aws_lambda_permission" "allow_eventbridge_s3" {
-  statement_id = "AllowExecutionFromEventBridgeS3"
+# Lambda Permission for EventBridge Scheduler to invoke Lambda for S3 Optimizer
+resource "aws_lambda_permission" "allow_eventbridge_scheduler_rds" {
+  statement_id = "AllowExecutionFromEventBridgeSchedulerRDS"
+  action = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.rds_optimizer.function_name
+  principal = "scheduler.amazonaws.com"
+  source_arn = var.rds_idle_scheduler_rule_arn
+}
+# Lambda Permission for EventBridge Scheduler to invoke Lambda for S3 Optimizer
+resource "aws_lambda_permission" "allow_eventbridge_scheduler_s3" {
+  statement_id = "AllowExecutionFromEventBridgeSchedulerS3"
   action = "lambda:InvokeFunction"    
   function_name = aws_lambda_function.s3_optimizer.function_name  
-  principal = "events.amazonaws.com"  
-  source_arn = var.s3_unused_rule_arn
+  principal = "scheduler.amazonaws.com"  
+  source_arn = var.s3_unused_scheduler_rule_arn
 } 

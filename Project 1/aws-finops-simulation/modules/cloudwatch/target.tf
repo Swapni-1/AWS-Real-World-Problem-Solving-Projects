@@ -22,8 +22,8 @@ resource "aws_cloudwatch_event_target" "rds_idle_target" {
 #   target_id = "RDSZeroConnTarget"
 # }
 
-resource "aws_cloudwatch_event_target" "s3_unused_target" {
-  rule = aws_cloudwatch_event_rule.s3_unused_rule.name
-  arn = var.aws_lambda_function_s3_optimizer_arn
-  target_id = "S3UnusedTarget"
-}
+# resource "aws_cloudwatch_event_target" "s3_unused_target" {
+#   rule = aws_cloudwatch_event_rule.s3_unused_rule.name
+#   arn = var.aws_lambda_function_s3_optimizer_arn
+#   target_id = "S3UnusedTarget"
+# }

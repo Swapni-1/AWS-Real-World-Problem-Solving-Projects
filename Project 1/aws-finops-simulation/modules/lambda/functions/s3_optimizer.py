@@ -12,36 +12,100 @@ def lambda_handler(event, context) :
     
     # 1. Check previous last 3 days total requests (AllRequests)
     metric = cw.get_metric_data(
-        MetricDataQueries=[
-            {
-                'Id': 's3_requests',
-                'MetricStat': {
-                    'Metric': {
-                        'Namespace': 'AWS/S3',
-                        'MetricName': 'AllRequests',
-                        'Dimensions': [
-                            {
-                                'Name': 'BucketName',
-                                'Value': bucket_name
-                            },
-                            {
-                                'Name': 'FilterId',
-                                'Value': 'EntireBucket'
-                            }
-                        ]
+            MetricDataQueries=[
+                {
+                    'Id': 's3_get_requests',
+                    'MetricStat': {
+                        'Metric': {
+                            'Namespace': 'AWS/S3',
+                            'MetricName': 'GetRequests',  # ✅ GET requests
+                            'Dimensions': [
+                                {
+                                    'Name': 'BucketName',
+                                    'Value': bucket_name
+                                },
+                                {
+                                    'Name': 'FilterId',
+                                    'Value': 'EntireBucket'
+                                }
+                            ]
+                        },
+                        'Period': 86400,  # Daily
+                        'Stat': 'Sum'
                     },
-                    'Period': 86400 * 3, # 3 days period (in seconds)
-                    'Stat': 'Sum'
                 },
-            }
-        ],
-        StartTime = datetime.now(timezone.utc) - timedelta(days=3),
-        EndTime = datetime.now(timezone.utc),
+                {
+                    'Id': 's3_put_requests',
+                    'MetricStat': {
+                        'Metric': {
+                            'Namespace': 'AWS/S3',
+                            'MetricName': 'PutRequests',  # ✅ PUT requests
+                            'Dimensions': [
+                                {
+                                    'Name': 'BucketName',
+                                    'Value': bucket_name
+                                },
+                                {
+                                    'Name': 'FilterId',
+                                    'Value': 'EntireBucket'
+                                }
+                            ]
+                        },
+                        'Period': 86400,  # Daily
+                        'Stat': 'Sum'
+                    },
+                },
+                {
+                    'Id': 's3_list_requests',
+                    'MetricStat': {
+                        'Metric': {
+                            'Namespace': 'AWS/S3',
+                            'MetricName': 'ListRequests',  # ✅ LIST requests
+                            'Dimensions': [
+                                {
+                                    'Name': 'BucketName',
+                                    'Value': bucket_name
+                                },
+                                {
+                                    'Name': 'FilterId',
+                                    'Value': 'EntireBucket'
+                                }
+                            ]
+                        },
+                        'Period': 86400,  # Daily
+                        'Stat': 'Sum'
+                    },
+                }
+            ],
+            StartTime=datetime.now(timezone.utc) - timedelta(days=3),
+            EndTime=datetime.now(timezone.utc),
     )
     
-    total_requests = 0
-    if metric['MetricDataResults'][0]['Values']:
-        total_requests = sum(metric['MetricDataResults'][0]['Values'])
+    get_requests = 0
+    put_requests = 0
+    list_requests = 0
+    
+    for result in metric['MetricDataResults']:
+        metric_id = result['Id']
+        values = result.get('Values', [])
+        
+        # Sum all values for the 3-day period
+        total = sum(values) if values else 0
+        
+        if metric_id == 's3_get_requests':
+            get_requests = int(total)
+            print(f"GET Requests (3 days): {get_requests}")
+        
+        elif metric_id == 's3_put_requests':
+            put_requests = int(total)
+            print(f"PUT Requests (3 days): {put_requests}")
+        
+        elif metric_id == 's3_list_requests':
+            list_requests = int(total)
+            print(f"LIST Requests (3 days): {list_requests}")
+            
+
+    total_requests = get_requests + put_requests + list_requests
     
     print(f"Bucket: {bucket_name}, Total Requests in last 3 days: {total_requests}")
     

@@ -87,26 +87,73 @@ resource "aws_cloudwatch_metric_alarm" "rds_idle" {
 
 # 5. S3 - Old Logs & Unused Backups (no request for 1 hours)
 
-resource "aws_cloudwatch_metric_alarm" "s3_ghost_bucket" {
-  alarm_name = "s3-unused-bucket-trigger"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods = 1
-  metric_name = "AllRequests"
-  namespace = "AWS/S3"
-  period = 86400 # 24 hours (daily check)
-  statistic = "Sum"
-  threshold = 0
+# resource "aws_cloudwatch_metric_alarm" "s3_ghost_bucket" {
+#   alarm_name          = "s3-unused-bucket-trigger"
+#   comparison_operator = "LessThanOrEqualToThreshold"
+#   evaluation_periods  = 1
+#   threshold           = 0
+#   alarm_description   = "Triggers if there is ZERO Get/Put/List activity in the S3 bucket for 24 hours (Ghost Bucket Detected)"
+  
+#   actions_enabled     = true
+#   alarm_actions       = [var.sns_topic_arn]
+#   ok_actions          = [var.sns_topic_arn]
 
-  dimensions = {
-    BucketName = var.s3_bucket_name
-    FilterId = "EntireBucket"
-  }
+#   # Using metric queries for math expression
+#   metric_query {
+#     id          = "m1"
+#     return_data = false
+#     metric {
+#       metric_name = "GetRequests"
+#       namespace   = "AWS/S3"
+#       period      = 3600 # 1 hour
+#       stat        = "Sum"
 
-  alarm_description = "Trigger if there is zero activity in the S3 bucket for 24 hours."
-  actions_enabled = true
-  alarm_actions = [var.sns_topic_arn]
-  ok_actions = [ var.sns_topic_arn ]
-}
+#       dimensions = {
+#         BucketName = var.s3_bucket_name
+#         FilterId   = "EntireBucket"
+#       }
+#     }
+#   }
+
+#   metric_query {
+#     id          = "m2"
+#     return_data = false
+#     metric {
+#       metric_name = "PutRequests"
+#       namespace   = "AWS/S3"
+#       period      = 3600
+#       stat        = "Sum"
+
+#       dimensions = {
+#         BucketName = var.s3_bucket_name
+#         FilterId   = "EntireBucket"
+#       }
+#     }
+#   }
+
+#   metric_query {
+#     id          = "m3"
+#     return_data = false
+#     metric {
+#       metric_name = "ListRequests"
+#       namespace   = "AWS/S3"
+#       period      = 3600
+#       stat        = "Sum"
+
+#       dimensions = {
+#         BucketName = var.s3_bucket_name
+#         FilterId   = "EntireBucket"
+#       }
+#     }
+#   }
+
+#   metric_query {
+#     id          = "e1"               # This is the final expression used for alarm
+#     expression  = "m1 + m2 + m3"
+#     label       = "Get+Put+List Requests"
+#     return_data = true
+#   }
+# }
 
 # Combine S3 Bucket Request (GET,PUT,POST,DELETE)
 # resource "aws_cloudwatch_metric_alarm" "s3_no_requests" {

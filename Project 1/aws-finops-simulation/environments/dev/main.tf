@@ -42,12 +42,14 @@ module "my_cloudwatch" {
 }
 
 module "finops_lambda" {
-  asg_name                = module.auto_scaling_group.asg_name
-  rds_instance_identifier = module.my_rds.db_instance_identifier
-  s3_bucket_name          = module.my_s3_bucket.bucket_name
-  rds_idle_rule_arn       = module.my_cloudwatch.rds_idle_rule_arn
-  s3_unused_rule_arn      = module.my_cloudwatch.s3_unused_rule_arn
-  source                  = "../../modules/lambda"
+  asg_name                     = module.auto_scaling_group.asg_name
+  rds_instance_identifier      = module.my_rds.db_instance_identifier
+  s3_bucket_name               = module.my_s3_bucket.bucket_name
+  rds_idle_rule_arn            = module.my_cloudwatch.rds_idle_rule_arn
+  rds_idle_scheduler_rule_arn  = module.my_cloudwatch.rds_idle_scheduler_rule_arn
+  s3_unused_scheduler_rule_arn = module.my_cloudwatch.s3_unused_scheduler_rule_arn
+  sns_topic_arn                = module.my_sns.sns_topic_arn
+  source                       = "../../modules/lambda"
 }
 
 module "my_sns" {

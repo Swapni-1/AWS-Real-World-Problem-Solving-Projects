@@ -12,6 +12,10 @@ output "rds_idle_rule_arn" {
   value = aws_cloudwatch_event_rule.rds_idle_rule.arn
 }
 
-output "s3_unused_rule_arn" {
-  value = aws_cloudwatch_event_rule.s3_unused_rule.arn
+output "rds_idle_scheduler_rule_arn" {
+  value = aws_scheduler_schedule.rds_stop_low_cpu.arn
+}
+
+output "s3_unused_scheduler_rule_arn" {
+  value = aws_scheduler_schedule.s3_cleanup.arn
 }

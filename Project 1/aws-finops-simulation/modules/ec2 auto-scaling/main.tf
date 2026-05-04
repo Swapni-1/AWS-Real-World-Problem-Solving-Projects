@@ -89,7 +89,7 @@ resource "aws_autoscaling_group" "asg" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [desired_capacity]
+    #ignore_changes = [desired_capacity]
   }
 
   instance_refresh {
@@ -118,23 +118,24 @@ resource "aws_autoscaling_policy" "cpu_tracking" {
 resource "aws_autoscaling_schedule" "stop_night" {
   scheduled_action_name = "stop-asg-night"
   autoscaling_group_name = aws_autoscaling_group.asg.name
-  recurrence = "0 15 * * *" 
+  
   min_size = 0
   max_size = 0
   desired_capacity = 0
 
-  start_time = timeadd(formatdate("YYYY-MM-DD'T'15:30:00Z",timestamp()),"24h")
+  recurrence = "30 15 * * *" # 9:00 PM IST (3:30 PM UTC)
 }
 
 resource "aws_autoscaling_schedule" "start_morning" {
   scheduled_action_name = "start-asg-morning"
   autoscaling_group_name = aws_autoscaling_group.asg.name
-  recurrence = "0 3 * * *"
+  
   min_size = 1
   max_size = 3
   desired_capacity = 1
 
-  start_time = timeadd(formatdate("YYYY-MM-DD'T'03:30:00Z",timestamp()),"24h")
+  recurrence = "15 3 * * *" # 8:45 AM IST (3:15 UTC)
+  time_zone = "Asia/Kolkata"
 }
 
 # # Web Server

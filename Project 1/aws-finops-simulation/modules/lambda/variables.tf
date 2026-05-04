@@ -30,7 +30,17 @@ variable "rds_idle_rule_arn" {
   description = "ARN of idle rds rule"
 }
 
-variable "s3_unused_rule_arn" {
+variable "rds_idle_scheduler_rule_arn" {
+  type = string
+  description = "ARN of idle rds rule"
+}
+
+variable "s3_unused_scheduler_rule_arn" {
   type = string
   description = "ARN of unused s3 rule"
+}
+
+variable "sns_topic_arn" {
+  type = string
+  description = "ARN of SNS Topic"
 }
