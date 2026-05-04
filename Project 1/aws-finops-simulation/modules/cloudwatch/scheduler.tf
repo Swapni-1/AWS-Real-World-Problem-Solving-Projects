@@ -120,7 +120,7 @@ resource "aws_scheduler_schedule" "s3_cleanup" {
     
     # ✅ FIXED: S3-specific input, NOT RDS
     input = jsonencode({
-      S3BucketName = var.s3_bucket_name
+      BucketName = var.s3_bucket_name
     })
   }
 }
