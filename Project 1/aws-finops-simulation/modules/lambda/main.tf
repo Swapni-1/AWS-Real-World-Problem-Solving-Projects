@@ -165,6 +165,7 @@ resource "aws_lambda_function" "s3_optimizer" {
   environment {
     variables = {
       S3_BUCKET_NAME = var.s3_bucket_name
+      SNS_TOPIC_ARN = var.sns_topic_arn
     }
   }
 }

@@ -5,10 +5,12 @@ from datetime import datetime, timedelta, timezone
 # AWS Clients
 s3 = boto3.client('s3')
 cw = boto3.client('cloudwatch')
+sns = boto3.client('sns')
 
 def lambda_handler(event, context) :
     # Environment Variables
     bucket_name = os.environ['S3_BUCKET']
+    sns_topic_arn = os.environ['SNS_TOPIC_ARN']
     
     # 1. Check previous last 3 days total requests (AllRequests)
     metric = cw.get_metric_data(
@@ -118,6 +120,11 @@ def lambda_handler(event, context) :
         paginator = s3.get_paginator('list_objects_v2')
         for page in paginator.paginate(Bucket=bucket_name):
             if 'Contents' in page:
+                send_sns_notification(
+                    topic_arn=sns_topic_arn,
+                    bucket_name=bucket_name,
+                    object_count=count_objects(bucket_name)
+                    )
                 delete_keys = [{'Key': obj['Key']} for obj in page['Contents']]
                 s3.delete_objects(Bucket=bucket_name, Delete={'Objects': delete_keys})
         print("Cleanup completed.")
@@ -170,3 +177,41 @@ def lambda_handler(event, context) :
             'statusCode': 200,
             'body': f"Optimization check finished for {bucket_name}"
         }
+        
+
+def send_sns_notification(topic_arn,bucket_name, object_count):
+    """Send SNS notification before cleanup"""
+    try:
+        subject = f"S3 Bucket Cleanup Alert - {bucket_name}"
+        message = f"""
+S3 Bucket Cleanup Notification
+
+Bucket Name: {bucket_name}
+Total Objects to be Deleted: {object_count}
+Action: Automatic cleanup initiated due to no activity for 3 days
+Timestamp: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}
+
+This notification is sent before cleanup process begins.
+Please verify if this action is intended.
+        """
+        
+        response = sns.publish(
+            TopicArn=topic_arn,
+            Subject=subject,
+            Message=message
+        )
+        print(f"SNS notification sent. Message ID: {response['MessageId']}")
+        return True
+    
+    except Exception as e:
+        print(f"Error sending SNS notification: {str(e)}")
+        return False
+
+def count_objects(bucket_name):
+    """Count total objects in bucket"""
+    count = 0
+    paginator = s3.get_paginator('list_objects_v2')
+    for page in paginator.paginate(Bucket=bucket_name):
+        if 'Contents' in page:
+            count += len(page['Contents'])
+    return count
