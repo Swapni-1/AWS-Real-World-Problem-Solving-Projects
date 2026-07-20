@@ -78,6 +78,8 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
     topic_arn     = var.s3_delete_alert_arn
     events        = ["s3:ObjectRemoved:*"] 
   }
+
+  depends_on = [ var.s3_delete_alert_arn ]
 }
 
 # WHY:
